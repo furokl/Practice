@@ -1,0 +1,2 @@
+﻿  RoboTrash_SFML.cpp
+C:\Users\Даниил\source\repos\RoboTrash_SFML\RoboTrash_SFML.cpp(1,10): fatal error C1083: Не удается открыть файл включение: SFML/Graphics.hpp: No such file or directory,
