@@ -18,6 +18,8 @@ void Camera::rotate() {
 
 void Camera::draw_beam() {
 	double temp_x{ x }, temp_y{ y };
+	bool condition_x;
+	bool condition_y;
 
 	for (int i{}; i < control_system::beam_range; i++)
 	{
@@ -25,18 +27,18 @@ void Camera::draw_beam() {
 		beam.beam_y.push_back(temp_y);
 		temp_x += sin(angle) * control_system::beam_step;
 		temp_y += cos(angle) * control_system::beam_step;
-	}
 
-	//	del
-	std::cout << "\n\tXXXX" << std::endl;
-	for (const auto& i : beam.beam_x)
-		std::cout << i << '\t';
-	std::cout << "\n\tYYYY" << std::endl;
-	for (const auto& i : beam.beam_y)
-		std::cout << i << '\t';
-	std::cout << "\n\tsin(" << angle << ") = " << sin(angle);
-	std::cout << "\n\tcos(" << angle << ") = " << cos(angle);
-	// <- del
+		((gap[0] < temp_x) && (temp_x < gap[2])) ? 
+			condition_x = true : condition_x = false;
+		((gap[1] < temp_x) && (temp_x < gap[3])) ? 
+			condition_y = true : condition_y = false;
+
+		if (condition_x && condition_y)
+		{
+			detect = true;
+			break;
+		}
+	}
 }
 
 void Camera::make_photo() {
@@ -56,6 +58,12 @@ void Camera::get_coord(double& x_, double& y_) {
 	y_ = y;
 }
 
+void Camera::set_item_point(Item& item) {
+	for (int i{}; i < gap.size(); i++)
+	{
+		gap[i] = item.polygon.point[i];
+	}
+}
 
 const std::string Camera::get_state() {
 	switch (state)

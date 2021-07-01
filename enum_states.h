@@ -28,4 +28,12 @@ enum class Item_Type
 	MAX_ITEM_TYPE
 };
 
+enum class Item_Form
+{
+	RECTANGLE,
+	//TRIANGE,
+	//SQUARE,
+	//CIRCLE
+	MAX_ITEM_FORM
+};
 #endif // !ENUM_STATE_H

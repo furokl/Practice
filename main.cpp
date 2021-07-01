@@ -11,7 +11,6 @@
 	Проверил:		Максимов А.Н.
 	*****************************************************************/	
 
-#include <iostream>
 #include <cmath>
 #include <vector>
 
@@ -24,14 +23,18 @@
 #include "robot.h"
 
 int main() {
-	Item tresh(2.0, 3.0, Item_Type::TRASH);
-	Robot a(2.2, 2.2);
-	Admin b;
-	a.set_state(Robot_State::WAITING);
-	std::cout << b.get_robot_state(a);
-	a.set_state(Robot_State::TAKE_OUT_TRASH);
-	std::cout << a.get_state();
-	Camera camera(2.0, 2.0);
+	Item trash(2.0, 2.0, Item_Type::TRASH, Item_Form::RECTANGLE);
+	Robot robot(2.2, 2.2);
+	Admin admin;
+	robot.set_state(Robot_State::WAITING);
+	std::cout << admin.get_robot_state(robot);
+	robot.set_state(Robot_State::TAKE_OUT_TRASH);
+	std::cout << robot.get_state();
+	Camera camera(0.0, 0.0);
+
+	std::cout << trash.get_item_type();
+	trash.make_volume(Item_Form::RECTANGLE);
+	camera.set_item_point(trash);
 	camera.draw_beam();
 	return 0;
 }
