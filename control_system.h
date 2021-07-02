@@ -4,11 +4,13 @@
 namespace control_system
 {
 	const double
-		rotate{ 0.5 },
+		camera_rotate{ 0.25 },
+		robot_step{ 0.05 },
 		beam_step{ 0.05 };
+		
 
 	const int
-		beam_range{ 100 };
+		beam_range{ 150 };
 
 
 }

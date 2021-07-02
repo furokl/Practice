@@ -15,6 +15,7 @@ enum class Robot_State
 enum class Camera_State
 {
 	WAITING,
+	DETECTED,
 	MAKE_PHOTO,
 	SEND_PHOTO,
 	ROTATED,
@@ -31,9 +32,6 @@ enum class Item_Type
 enum class Item_Form
 {
 	RECTANGLE,
-	//TRIANGE,
-	//SQUARE,
-	//CIRCLE
 	MAX_ITEM_FORM
 };
 #endif // !ENUM_STATE_H

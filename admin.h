@@ -13,6 +13,8 @@ public:
 	void camera_off();
 	std::string get_robot_state(Robot& robot);
 	std::string get_camera_state(Camera& camera);
+
+
 };
 
 #endif // !ADMIN_H

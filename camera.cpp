@@ -13,7 +13,10 @@ Camera::Camera(double x_, double y_)
 }
 
 void Camera::rotate() {
-	angle += control_system::rotate;
+	angle += control_system::camera_rotate;
+
+	if (angle >= 360.0)
+		angle = 0.0;
 }
 
 void Camera::draw_beam() {
@@ -21,23 +24,37 @@ void Camera::draw_beam() {
 	bool condition_x;
 	bool condition_y;
 
-	for (int i{}; i < control_system::beam_range; i++)
+	while (!detect) 
 	{
-		beam.beam_x.push_back(temp_x);
-		beam.beam_y.push_back(temp_y);
-		temp_x += sin(angle) * control_system::beam_step;
-		temp_y += cos(angle) * control_system::beam_step;
-
-		((gap[0] < temp_x) && (temp_x < gap[2])) ? 
-			condition_x = true : condition_x = false;
-		((gap[1] < temp_x) && (temp_x < gap[3])) ? 
-			condition_y = true : condition_y = false;
-
-		if (condition_x && condition_y)
+		for (int i{}; i < control_system::beam_range; i++)
 		{
-			detect = true;
-			break;
+			beam.beam_x.push_back(temp_x);
+			beam.beam_y.push_back(temp_y);
+			temp_x += sin(angle) * control_system::beam_step;
+			temp_y += cos(angle) * control_system::beam_step;
+
+			((gap.x_min <= temp_x) && (temp_x <= gap.x_max)) ?
+				condition_x = true : condition_x = false;
+			((gap.y_min <= temp_y) && (temp_y <= gap.y_max)) ?
+				condition_y = true : condition_y = false;
+
+			if ((condition_x) && (condition_y))
+			{
+				state = Camera_State::DETECTED;
+				detect = true;
+				detect_x = temp_x;
+				detect_y = temp_y;
+
+				break;
+			}
 		}
+		temp_x = 0.0;
+		temp_y = 0.0;
+		beam.beam_x.clear();
+		beam.beam_y.clear();
+
+		std::cout << angle << std::endl; // del
+		rotate();
 	}
 }
 
@@ -53,16 +70,16 @@ void Camera::get_photo() {
 
 }
 
-void Camera::get_coord(double& x_, double& y_) {
-	x_ = x;
-	y_ = y;
+void Camera::set_detect_coord(double& x_, double& y_) {
+	x_ = detect_x;
+	y_ = detect_y;
 }
 
-void Camera::set_item_point(Item& item) {
-	for (int i{}; i < gap.size(); i++)
-	{
-		gap[i] = item.polygon.point[i];
-	}
+void Camera::set_item_points(Item& item) {
+	gap.x_min = item.polygon.point[0];
+	gap.y_min = item.polygon.point[1];
+	gap.x_max = item.polygon.point[2];
+	gap.y_max = item.polygon.point[3];
 }
 
 const std::string Camera::get_state() {
@@ -70,6 +87,9 @@ const std::string Camera::get_state() {
 	{
 	case Camera_State::WAITING:
 		return "waiting...";
+
+	case Camera_State::DETECTED:
+		return "detected!";
 
 	case Camera_State::MAKE_PHOTO:
 		return "make a photo";

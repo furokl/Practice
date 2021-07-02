@@ -147,6 +147,7 @@
   <ItemGroup>
     <ClCompile Include="admin.cpp" />
     <ClCompile Include="camera.cpp" />
+    <ClCompile Include="engine.cpp" />
     <ClCompile Include="item.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="robot.cpp" />
@@ -155,6 +156,7 @@
     <ClInclude Include="admin.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="control_system.h" />
+    <ClInclude Include="engine.h" />
     <ClInclude Include="enum_states.h" />
     <ClInclude Include="item.h" />
     <ClInclude Include="math_const.h" />
