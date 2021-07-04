@@ -1,7 +1,7 @@
 ﻿  admin.cpp
   camera.cpp
   engine.cpp
-  main.cpp
+  item.cpp
   robot.cpp
   Создание кода...
   RoboTrash_SFML.vcxproj -> C:\Users\Даниил\source\repos\RoboTrash_SFML\x64\Debug\RoboTrash_SFML.exe

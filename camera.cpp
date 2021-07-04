@@ -1,5 +1,9 @@
 #include <iostream>
 #include <cmath>
+#include <Windows.h>
+// for <Windows.h>
+#undef min
+#undef max
 
 #include "control_system.h"
 #include "math_const.h"
@@ -10,26 +14,27 @@
 Camera::Camera(double x_, double y_)
 	: x(x_), y(y_)
 {
+	camera_texture.loadFromFile("D:\\FuroK\\Visual Studio\\Texture\\Practice\\camera.png");
+	camera_sprite.setTexture(camera_texture);
 }
 
 void Camera::rotate() {
 	angle += control_system::camera_rotate;
+	Sleep(50);
 
 	if (angle >= 360.0)
 		angle = 0.0;
+	
 }
 
-void Camera::draw_beam() {
+void Camera::make_beam(Item &item) {
 	double temp_x{ x }, temp_y{ y };
 	bool condition_x;
 	bool condition_y;
 
-	while (!detect) 
-	{
+	if (!detect) {
 		for (int i{}; i < control_system::beam_range; i++)
 		{
-			beam.beam_x.push_back(temp_x);
-			beam.beam_y.push_back(temp_y);
 			temp_x += sin(angle) * control_system::beam_step;
 			temp_y += cos(angle) * control_system::beam_step;
 
@@ -38,7 +43,7 @@ void Camera::draw_beam() {
 			((gap.y_min <= temp_y) && (temp_y <= gap.y_max)) ?
 				condition_y = true : condition_y = false;
 
-			if ((condition_x) && (condition_y))
+			if ((condition_x) && (condition_y) && (item.get_item_type()))
 			{
 				state = Camera_State::DETECTED;
 				detect = true;
@@ -48,13 +53,10 @@ void Camera::draw_beam() {
 				break;
 			}
 		}
+		detect_x = temp_x;
+		detect_y = temp_y;
 		temp_x = 0.0;
 		temp_y = 0.0;
-		beam.beam_x.clear();
-		beam.beam_y.clear();
-
-		std::cout << angle << std::endl; // del
-		rotate();
 	}
 }
 
@@ -104,4 +106,30 @@ const std::string Camera::get_state() {
 		std::cout << "\n!!!\tDefault case print_camera_state()" << std::endl;
 		std::exit(EXIT_FAILURE);
 	}
+}
+
+// SFML
+
+void Camera::draw_beam(sf::RenderWindow &window, Item &item) {
+	sf::Vertex beam[2] =
+	{
+		sf::Vertex(sf::Vector2f(
+			static_cast<float>(x + control_system::camera_displacement),
+			static_cast<float>(y + control_system::camera_displacement))),
+		sf::Vertex(sf::Vector2f(
+			static_cast<float>(detect_x),
+			static_cast<float>(detect_y))),
+	};
+
+	beam[0].color = sf::Color(255, 0, 0);
+	beam[1].color = sf::Color(255, 41, 41);
+
+	window.draw(beam, 2, sf::Lines);
+	make_beam(item);
+	rotate();
+}
+
+void Camera::draw_camera(sf::RenderWindow &window) {
+	camera_sprite.setPosition(static_cast<float>(x), static_cast<float>(y));
+	window.draw(camera_sprite);
 }

@@ -5,7 +5,7 @@
 
 #include "enum_states.h"
 #include "camera.h"
-#include "control_system.h"
+
 class Robot
 {
 private:
@@ -28,7 +28,9 @@ public:
 	void set_state(Robot_State);
 	const std::string get_state();
 
-	sf::Sprite get_sprite();
+	// SFML
+
+	void draw_robot(sf::RenderWindow&);
 };
 
 #endif // !ROBOT_H

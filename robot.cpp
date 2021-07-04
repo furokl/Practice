@@ -1,6 +1,8 @@
 #include <iostream>
 
 #include "robot.h"
+#include "control_system.h"
+#include "math_const.h"
 
 Robot::Robot(double x_, double y_)
 	: x(x_), y(y_)
@@ -74,7 +76,7 @@ const std::string Robot::get_state() {
 
 // SFML
 
-sf::Sprite Robot::get_sprite()
-{
-	return robot_sprite;
+void Robot::draw_robot(sf::RenderWindow& window) {
+	robot_sprite.setPosition(static_cast<float>(x), static_cast<float>(y));
+	window.draw(robot_sprite);
 }
