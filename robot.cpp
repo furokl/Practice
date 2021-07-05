@@ -16,22 +16,24 @@ void Robot::rotate() {
 }
 
 void Robot::move(Camera& camera) {
-	camera.set_detect_coord(detect_x, detect_y);
-	double azimuth_rad = atan2(detect_y - y, detect_x - x);
-	azimuth = azimuth_rad * 180.0 / math_const::PI;
-
-	bool condition_x{ true };
-	bool condition_y{ true };
-
-	while (condition_x && condition_y)
+	if(camera.get_detect())
 	{
-		condition_x = (abs(detect_x - x) > 1.0);
-		condition_y = (abs(detect_y - y) > 1.0);
+		camera.set_detect_coord(detect_x, detect_y);
+		double azimuth_rad = atan2(detect_y - y, detect_x - x);
+		azimuth = azimuth_rad * 180.0 / math_const::PI;
 
-		x += sin(azimuth_rad) * control_system::robot_step;
-		y += cos(azimuth_rad) * control_system::robot_step;
-		std::cout << "\t Robot:\t" << x << ' ' << y << std::endl;
-		std::cout << "\t Item:\t" << detect_x << ' ' << detect_y << '\n' << std::endl;
+		bool condition_x = (abs(detect_x - x) > control_system::robot_detect);
+		bool condition_y = (abs(detect_y - y) > control_system::robot_detect);
+
+		if (condition_x && condition_y)
+		{
+			x += cos(azimuth_rad) * control_system::robot_step;
+			y += sin(azimuth_rad) * control_system::robot_step;
+		}
+		else
+		{
+			camera.set_detect_false();
+		}
 	}
 }
 
@@ -77,6 +79,9 @@ const std::string Robot::get_state() {
 // SFML
 
 void Robot::draw_robot(sf::RenderWindow& window) {
-	robot_sprite.setPosition(static_cast<float>(x), static_cast<float>(y));
+	robot_sprite.setPosition(
+		static_cast<float>(x - control_system::robot_displacement),
+		static_cast<float>(y - control_system::robot_displacement));
 	window.draw(robot_sprite);
+
 }

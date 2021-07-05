@@ -16,7 +16,9 @@ private:
 	Item_Form form;
 	
 	sf::Texture item_texture;
+	sf::Texture trash_can_texture;
 	sf::Sprite item_sprite;
+	sf::Sprite trash_can_sprite;
 
 public:
 	Polygon polygon;
@@ -29,6 +31,7 @@ public:
 	// SFML
 
 	void draw_item(sf::RenderWindow&);
+	void draw_trash_can(sf::RenderWindow&);
 };
 
 #endif // !ITEM_H

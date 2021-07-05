@@ -72,6 +72,14 @@ void Camera::get_photo() {
 
 }
 
+bool Camera::get_detect() {
+	return detect;
+}
+
+void Camera::set_detect_false() {
+	detect = false;
+}
+
 void Camera::set_detect_coord(double& x_, double& y_) {
 	x_ = detect_x;
 	y_ = detect_y;
@@ -121,12 +129,15 @@ void Camera::draw_beam(sf::RenderWindow &window, Item &item) {
 			static_cast<float>(detect_y))),
 	};
 
-	beam[0].color = sf::Color(255, 0, 0);
-	beam[1].color = sf::Color(255, 41, 41);
+	beam[0].color = sf::Color(255, 0, 0, 160);
+	beam[1].color = sf::Color(255, 41, 41, 160);
 
 	window.draw(beam, 2, sf::Lines);
-	make_beam(item);
-	rotate();
+	if (!detect)
+	{
+		make_beam(item);
+		rotate();
+	}
 }
 
 void Camera::draw_camera(sf::RenderWindow &window) {

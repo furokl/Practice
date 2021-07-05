@@ -10,8 +10,9 @@ class Robot
 {
 private:
 	bool power{};
-	double	x{}, y{},
-		azimuth{},
+
+	double	
+		x{}, y{}, azimuth{},
 		detect_x{}, detect_y{};
 
 	Robot_State state{};

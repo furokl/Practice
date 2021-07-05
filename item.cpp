@@ -1,6 +1,8 @@
 #include <iostream>
 
 #include "enum_states.h"
+#include "control_system.h"
+
 #include "item.h"
 
 
@@ -11,6 +13,8 @@ Item::Item(double x_, double y_, Item_Type type_, Item_Form form_)
 
 	item_texture.loadFromFile("D:\\FuroK\\Visual Studio\\Texture\\Practice\\item.png");
 	item_sprite.setTexture(item_texture);
+	trash_can_texture.loadFromFile("D:\\FuroK\\Visual Studio\\Texture\\Practice\\trash_can.png");
+	trash_can_sprite.setTexture(trash_can_texture);
 }
 
 void Item::get_coord(double& temp_x, double& temp_y) {
@@ -46,6 +50,13 @@ void Item::make_volume(Item_Form form) {
 		polygon.point.push_back(y + y_stretch);
 		break;
 
+	case Item_Form::CIRCLE:			// to do
+		polygon.point.push_back(x);
+		polygon.point.push_back(y);
+		polygon.point.push_back(x + x_stretch);
+		polygon.point.push_back(y + y_stretch);
+		break;
+
 	default:
 		std::cout << "\n!!!\tDefault case print_camera_state()" << std::endl;
 		std::exit(EXIT_FAILURE);
@@ -62,4 +73,11 @@ void Item::set_scale(double &x_, double &y_) {		// add sfml
 void Item::draw_item(sf::RenderWindow& window) {
 	item_sprite.setPosition(static_cast<float>(x), static_cast<float>(y));
 	window.draw(item_sprite);
+}
+
+void Item::draw_trash_can(sf::RenderWindow& window) {
+	trash_can_sprite.setPosition(
+		static_cast<float>(x - control_system::item_displacement),
+		static_cast<float>(y - control_system::item_displacement));
+	window.draw(trash_can_sprite);
 }

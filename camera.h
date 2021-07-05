@@ -9,7 +9,7 @@
 class Camera
 {
 private:
-	bool power{}, detect{};
+	bool power{}, detect;
 	double	x{}, y{}, angle{ 0.0 },
 		detect_x{}, detect_y{};
 
@@ -20,7 +20,7 @@ private:
 			x_max, y_max;
 	};
  
-	Gap gap;
+	Gap gap{};
 	Camera_State state{};
 
 	sf::Texture camera_texture;
@@ -33,6 +33,8 @@ public:
 	void make_photo();
 	void check_item();
 	void get_photo();
+	bool get_detect();
+	void set_detect_false();
 	void set_detect_coord(double&, double&);
 	void set_item_points(Item& item);
 	const std::string get_state();
