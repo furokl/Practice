@@ -2,6 +2,7 @@
 #define CAMERA_H
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <vector>
 
 #include "item.h"
@@ -9,13 +10,13 @@
 class Camera
 {
 private:
-	bool power{}, detect;
-	double	x{}, y{}, angle{ 0.0 },
-		detect_x{}, detect_y{};
+	bool power, detect{};
+	float	x, y, angle{},
+		detect_x, detect_y;
 
 	struct Gap
 	{
-		double 
+		float 
 			x_min, y_min, 
 			x_max, y_max;
 	};
@@ -23,19 +24,23 @@ private:
 	Gap gap{};
 	Camera_State state{};
 
+	sf::CircleShape beam_circle;
 	sf::Texture camera_texture;
 	sf::Sprite camera_sprite;
 
+	sf::SoundBuffer detect_buffer;
+	sf::Sound detect_sound;
+
 public:
-	Camera(double, double);
+	Camera(float, float);
 	void rotate();
-	void make_beam(Item&);
+	void make_beam();
 	void make_photo();
 	void check_item();
 	void get_photo();
 	bool get_detect();
 	void set_detect_false();
-	void set_detect_coord(double&, double&);
+	void set_detect_coord(float&, float&);
 	void set_item_points(Item& item);
 	const std::string get_state();
 
@@ -43,6 +48,7 @@ public:
 
 	void draw_beam(sf::RenderWindow&, Item&);
 	void draw_camera(sf::RenderWindow&);
+	void draw_beam_range(sf::RenderWindow&);
 };
 
 #endif // !CAMERA_H

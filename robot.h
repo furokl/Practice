@@ -9,19 +9,20 @@
 class Robot
 {
 private:
-	bool power{};
+	bool power;
 
-	double	
-		x{}, y{}, azimuth{},
-		detect_x{}, detect_y{};
+	float
+		x, y,
+		detect_x, detect_y,
+		angle{}, azimuth{};
 
-	Robot_State state{};
+	Robot_State state;
 
 	sf::Texture robot_texture;
 	sf::Sprite robot_sprite;
 
 public:
-	Robot(double, double);
+	Robot(float, float);
 	void rotate();
 	void move(Camera&);
 	void take_object();
@@ -32,6 +33,7 @@ public:
 	// SFML
 
 	void draw_robot(sf::RenderWindow&);
+	void draw_turn_robot();
 };
 
 #endif // !ROBOT_H

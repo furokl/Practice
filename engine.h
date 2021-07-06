@@ -9,7 +9,9 @@ private:
 	sf::RenderWindow window;
 
 	sf::Texture background_texture;
+	sf::Texture walls_texture;
 	sf::Sprite background_sprite;
+	sf::Sprite walls_sprite;
 
 public:
 	Engine();

@@ -6,18 +6,21 @@
 #include "item.h"
 
 
-Item::Item(double x_, double y_, Item_Type type_, Item_Form form_)
+Item::Item(float x_, float y_, Item_Type type_, Item_Form form_)
 	: x(x_), y(y_), type(type_), form(form_)
 {
 	make_volume(form_);
 
 	item_texture.loadFromFile("D:\\FuroK\\Visual Studio\\Texture\\Practice\\item.png");
+	item_texture.setSmooth(true);
 	item_sprite.setTexture(item_texture);
+
 	trash_can_texture.loadFromFile("D:\\FuroK\\Visual Studio\\Texture\\Practice\\trash_can.png");
+	trash_can_texture.setSmooth(true);
 	trash_can_sprite.setTexture(trash_can_texture);
 }
 
-void Item::get_coord(double& temp_x, double& temp_y) {
+void Item::get_coord(float& temp_x, float& temp_y) {
 	temp_x = x;
 	temp_y = y;
 }
@@ -37,20 +40,12 @@ bool Item::get_item_type() {
 	}
 }
 
-
-
-
 void Item::make_volume(Item_Form form) {
+	x_stretch = control_system::item_stretch;
+	y_stretch = control_system::item_stretch;
 	switch (form)
 	{
 	case Item_Form::RECTANGLE:
-		polygon.point.push_back(x);
-		polygon.point.push_back(y);
-		polygon.point.push_back(x + x_stretch);
-		polygon.point.push_back(y + y_stretch);
-		break;
-
-	case Item_Form::CIRCLE:			// to do
 		polygon.point.push_back(x);
 		polygon.point.push_back(y);
 		polygon.point.push_back(x + x_stretch);
@@ -63,21 +58,20 @@ void Item::make_volume(Item_Form form) {
 	}
 }
 
-void Item::set_scale(double &x_, double &y_) {		// add sfml
-	x_stretch = x_;
-	y_stretch = y_;
-}
+
 
 // SFML
 
 void Item::draw_item(sf::RenderWindow& window) {
-	item_sprite.setPosition(static_cast<float>(x), static_cast<float>(y));
+	item_sprite.setPosition(x, y);
 	window.draw(item_sprite);
 }
 
 void Item::draw_trash_can(sf::RenderWindow& window) {
-	trash_can_sprite.setPosition(
-		static_cast<float>(x - control_system::item_displacement),
-		static_cast<float>(y - control_system::item_displacement));
+	trash_can_sprite.setPosition(x, y);
+	trash_can_sprite.move(
+		control_system::item_displacement,
+		control_system::item_displacement);
+
 	window.draw(trash_can_sprite);
 }

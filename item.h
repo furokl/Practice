@@ -7,11 +7,15 @@
 class Item
 {
 private:
-	double x, y, x_stretch{ 20.0 }, y_stretch{ 20.0 };
+	float
+		x, y,
+		x_stretch, y_stretch;
+
 	struct Polygon 
 	{
-		std::vector<double> point;
+		std::vector<float> point;
 	};
+
 	Item_Type type;
 	Item_Form form;
 	
@@ -22,11 +26,10 @@ private:
 
 public:
 	Polygon polygon;
-	Item(double, double, Item_Type, Item_Form);
-	void get_coord(double&, double&);
+	Item(float, float, Item_Type, Item_Form);
+	void get_coord(float&, float&);
 	bool get_item_type();
 	void make_volume(Item_Form form);
-	void set_scale(double&, double&);
 
 	// SFML
 

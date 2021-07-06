@@ -11,24 +11,28 @@
 
 #include "camera.h"
 
-Camera::Camera(double x_, double y_)
+Camera::Camera(float x_, float y_)
 	: x(x_), y(y_)
 {
 	camera_texture.loadFromFile("D:\\FuroK\\Visual Studio\\Texture\\Practice\\camera.png");
+	camera_sprite.setColor(sf::Color(255, 255, 255, 100));
 	camera_sprite.setTexture(camera_texture);
+
+	detect_buffer.loadFromFile("D:\\FuroK\\Visual Studio\\Texture\\Practice\\cum.ogg");
+	detect_sound.setBuffer(detect_buffer);
+	detect_sound.setVolume(control_system::sound_master);
 }
 
 void Camera::rotate() {
 	angle += control_system::camera_rotate;
-	Sleep(50);
+	Sleep(20);
 
-	if (angle >= 360.0)
-		angle = 0.0;
-	
+	if (angle >= 360.f)
+		angle = 0.f;
 }
 
-void Camera::make_beam(Item &item) {
-	double temp_x{ x }, temp_y{ y };
+void Camera::make_beam() {
+	float temp_x{ x }, temp_y{ y };
 	bool condition_x;
 	bool condition_y;
 
@@ -43,20 +47,21 @@ void Camera::make_beam(Item &item) {
 			((gap.y_min <= temp_y) && (temp_y <= gap.y_max)) ?
 				condition_y = true : condition_y = false;
 
-			if ((condition_x) && (condition_y) && (item.get_item_type()))
+			if ((condition_x) && (condition_y))
 			{
 				state = Camera_State::DETECTED;
 				detect = true;
 				detect_x = temp_x;
 				detect_y = temp_y;
+				detect_sound.play();
 
 				break;
 			}
 		}
 		detect_x = temp_x;
 		detect_y = temp_y;
-		temp_x = 0.0;
-		temp_y = 0.0;
+		temp_x = 0.f;
+		temp_y = 0.f;
 	}
 }
 
@@ -80,7 +85,7 @@ void Camera::set_detect_false() {
 	detect = false;
 }
 
-void Camera::set_detect_coord(double& x_, double& y_) {
+void Camera::set_detect_coord(float& x_, float& y_) {
 	x_ = detect_x;
 	y_ = detect_y;
 }
@@ -119,28 +124,46 @@ const std::string Camera::get_state() {
 // SFML
 
 void Camera::draw_beam(sf::RenderWindow &window, Item &item) {
+	if (!detect)
+	{
+		make_beam();
+		rotate();
+	}
+
+	draw_beam_range(window);
+
 	sf::Vertex beam[2] =
 	{
-		sf::Vertex(sf::Vector2f(
-			static_cast<float>(x + control_system::camera_displacement),
-			static_cast<float>(y + control_system::camera_displacement))),
-		sf::Vertex(sf::Vector2f(
-			static_cast<float>(detect_x),
-			static_cast<float>(detect_y))),
+		sf::Vertex(sf::Vector2f(x, y)),
+		sf::Vertex(sf::Vector2f(detect_x, detect_y)),
 	};
-
 	beam[0].color = sf::Color(255, 0, 0, 160);
 	beam[1].color = sf::Color(255, 41, 41, 160);
 
 	window.draw(beam, 2, sf::Lines);
-	if (!detect)
-	{
-		make_beam(item);
-		rotate();
-	}
 }
 
 void Camera::draw_camera(sf::RenderWindow &window) {
-	camera_sprite.setPosition(static_cast<float>(x), static_cast<float>(y));
+	camera_sprite.setPosition(x, y);
+	camera_sprite.move(
+		control_system::camera_displacement,
+		control_system::camera_displacement);
+
 	window.draw(camera_sprite);
+}
+
+void Camera::draw_beam_range(sf::RenderWindow& window) {
+	beam_circle.setPosition(x, y);
+	beam_circle.move(
+		control_system::circle_displacement,
+		control_system::circle_displacement);
+
+	beam_circle.setPointCount(50);
+
+	beam_circle.setRadius(control_system::beam_circle);
+	beam_circle.setFillColor(sf::Color(0, 0, 0, 0));
+	beam_circle.setOutlineThickness(2.f);
+	beam_circle.setOutlineColor(sf::Color(255, 0, 0, 100));
+
+	window.draw(beam_circle);
 }

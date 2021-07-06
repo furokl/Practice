@@ -3,7 +3,7 @@
 
 namespace math_const
 {
-	const double PI{ 3.1415'926'535 };
+	const float PI{ 3.1415f };
 
 }
 

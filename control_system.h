@@ -3,17 +3,22 @@
 
 namespace control_system
 {
-	const double
-		camera_rotate{ 0.05 },
-		robot_step{ 0.025 },
-		beam_step{ 0.05 };
+	const float
+		camera_rotate{ 0.05f },
+		robot_rotate{ 1.f },
+		robot_step{ 0.075f },
+		beam_step{ 0.05f };
 
 	const int
-		camera_displacement{ 13 },
-		robot_displacement { 25 },
-		robot_detect { static_cast<int>(robot_step) },
-		item_displacement { 13 },
-		beam_range{ static_cast<int>((1.0 / beam_step) * 150) };
+		camera_displacement{ -13 },
+		robot_displacement{ -25 },
+		item_displacement{ -15 },
+		circle_displacement{ -150 },
+		item_stretch{ 20 },
+		beam_circle{ 150 },
+		sound_master{ 25 },
+		robot_detect{ static_cast<int>(robot_step) },
+		beam_range{ static_cast<int>((1.f / beam_step) * 150) };
 }
 
 #endif // !CONTROL_SYSTEM_H
