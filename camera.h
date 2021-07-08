@@ -34,9 +34,9 @@ private:
 public:
 	Camera(float, float);
 	void rotate();
-	void make_beam();
+	void make_beam(Item &item);
 	void make_photo();
-	void check_item();
+	bool check_item(Item &item);
 	void get_photo();
 	bool get_detect();
 	void set_detect_false();

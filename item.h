@@ -28,7 +28,8 @@ public:
 	Polygon polygon;
 	Item(float, float, Item_Type, Item_Form);
 	void get_coord(float&, float&);
-	bool get_item_type();
+	Item_Type get_item_type();
+	void set_item_type();
 	void make_volume(Item_Form form);
 
 	// SFML

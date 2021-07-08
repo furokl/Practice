@@ -11,11 +11,11 @@ Item::Item(float x_, float y_, Item_Type type_, Item_Form form_)
 {
 	make_volume(form_);
 
-	item_texture.loadFromFile("D:\\FuroK\\Visual Studio\\Texture\\Practice\\item.png");
+	item_texture.loadFromFile("C:\\Users\\User\\source\\repos\\RoboTrash_SFML\\redist\\item.png");
 	item_texture.setSmooth(true);
 	item_sprite.setTexture(item_texture);
 
-	trash_can_texture.loadFromFile("D:\\FuroK\\Visual Studio\\Texture\\Practice\\trash_can.png");
+	trash_can_texture.loadFromFile("C:\\Users\\User\\source\\repos\\RoboTrash_SFML\\redist\\trash_can.png");
 	trash_can_texture.setSmooth(true);
 	trash_can_sprite.setTexture(trash_can_texture);
 }
@@ -25,19 +25,23 @@ void Item::get_coord(float& temp_x, float& temp_y) {
 	temp_y = y;
 }
 
-bool Item::get_item_type() {
+Item_Type Item::get_item_type() {
 	switch (type)
 	{
 	case Item_Type::TRASH:
-		return true;
+		return Item_Type::TRASH;
 
 	case Item_Type::NOT_TRASH:
-		return false;
+		return Item_Type::NOT_TRASH;
 
 	default:
 		std::cout << "\n!!!\tDefault case get_item_type()" << std::endl;
 		std::exit(EXIT_FAILURE);
 	}
+}
+
+void Item::set_item_type() {
+	type = Item_Type::NOT_TRASH;
 }
 
 void Item::make_volume(Item_Form form) {
@@ -64,6 +68,8 @@ void Item::make_volume(Item_Form form) {
 
 void Item::draw_item(sf::RenderWindow& window) {
 	item_sprite.setPosition(x, y);
+	// move?
+
 	window.draw(item_sprite);
 }
 

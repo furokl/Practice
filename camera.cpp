@@ -14,11 +14,11 @@
 Camera::Camera(float x_, float y_)
 	: x(x_), y(y_)
 {
-	camera_texture.loadFromFile("D:\\FuroK\\Visual Studio\\Texture\\Practice\\camera.png");
+	camera_texture.loadFromFile("C:\\Users\\User\\source\\repos\\RoboTrash_SFML\\redist\\camera.png");
 	camera_sprite.setColor(sf::Color(255, 255, 255, 100));
 	camera_sprite.setTexture(camera_texture);
 
-	detect_buffer.loadFromFile("D:\\FuroK\\Visual Studio\\Texture\\Practice\\cum.ogg");
+	detect_buffer.loadFromFile("C:\\Users\\User\\source\\repos\\RoboTrash_SFML\\redist\\cum.ogg");
 	detect_sound.setBuffer(detect_buffer);
 	detect_sound.setVolume(control_system::sound_master);
 }
@@ -31,29 +31,26 @@ void Camera::rotate() {
 		angle = 0.f;
 }
 
-void Camera::make_beam() {
+void Camera::make_beam(Item &item) {
 	float temp_x{ x }, temp_y{ y };
-	bool condition_x;
-	bool condition_y;
-
 	if (!detect) {
 		for (int i{}; i < control_system::beam_range; i++)
 		{
 			temp_x += sin(angle) * control_system::beam_step;
 			temp_y += cos(angle) * control_system::beam_step;
 
-			((gap.x_min <= temp_x) && (temp_x <= gap.x_max)) ?
-				condition_x = true : condition_x = false;
-			((gap.y_min <= temp_y) && (temp_y <= gap.y_max)) ?
-				condition_y = true : condition_y = false;
-
-			if ((condition_x) && (condition_y))
+			if (((gap.x_min <= temp_x) && (temp_x <= gap.x_max)) &&
+				((gap.y_min <= temp_y) && (temp_y <= gap.y_max)))
 			{
-				state = Camera_State::DETECTED;
-				detect = true;
-				detect_x = temp_x;
-				detect_y = temp_y;
-				detect_sound.play();
+				if (check_item(item))
+				{
+					state = Camera_State::DETECTED;
+					detect = true;
+					detect_x = temp_x;
+					detect_y = temp_y;
+					detect_sound.play();
+					item.set_item_type();
+				}
 
 				break;
 			}
@@ -69,8 +66,11 @@ void Camera::make_photo() {
 
 }
 
-void Camera::check_item() {
-
+bool Camera::check_item(Item &item) {
+	if (item.get_item_type() == Item_Type::TRASH)
+		return true;
+	else
+		return false;
 }
 
 void Camera::get_photo() {
@@ -126,7 +126,7 @@ const std::string Camera::get_state() {
 void Camera::draw_beam(sf::RenderWindow &window, Item &item) {
 	if (!detect)
 	{
-		make_beam();
+		make_beam(item);
 		rotate();
 	}
 
