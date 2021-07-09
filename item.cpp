@@ -20,9 +20,17 @@ Item::Item(float x_, float y_, Item_Type type_, Item_Form form_)
 	trash_can_sprite.setTexture(trash_can_texture);
 }
 
-void Item::get_coord(float& temp_x, float& temp_y) {
-	temp_x = x;
-	temp_y = y;
+void Item::set_coord(float& x_, float& y_) {
+	x = x_;
+	y = y_;
+}
+
+float Item::get_coord_x() {
+	return x;
+}
+
+float Item::get_coord_y() {
+	return y;
 }
 
 Item_Type Item::get_item_type() {
@@ -33,6 +41,9 @@ Item_Type Item::get_item_type() {
 
 	case Item_Type::NOT_TRASH:
 		return Item_Type::NOT_TRASH;
+
+	case Item_Type::TRASH_CAN:
+		return Item_Type::TRASH_CAN;
 
 	default:
 		std::cout << "\n!!!\tDefault case get_item_type()" << std::endl;
@@ -47,6 +58,7 @@ void Item::set_item_type() {
 void Item::make_volume(Item_Form form) {
 	x_stretch = control_system::item_stretch;
 	y_stretch = control_system::item_stretch;
+
 	switch (form)
 	{
 	case Item_Form::RECTANGLE:
@@ -68,7 +80,9 @@ void Item::make_volume(Item_Form form) {
 
 void Item::draw_item(sf::RenderWindow& window) {
 	item_sprite.setPosition(x, y);
-	// move?
+	item_sprite.move(
+		control_system::item_displacement,
+		control_system::item_displacement);
 
 	window.draw(item_sprite);
 }
@@ -76,8 +90,8 @@ void Item::draw_item(sf::RenderWindow& window) {
 void Item::draw_trash_can(sf::RenderWindow& window) {
 	trash_can_sprite.setPosition(x, y);
 	trash_can_sprite.move(
-		control_system::item_displacement,
-		control_system::item_displacement);
+		control_system::can_displacement,
+		control_system::can_displacement);
 
 	window.draw(trash_can_sprite);
 }

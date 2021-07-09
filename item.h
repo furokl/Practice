@@ -27,8 +27,10 @@ private:
 public:
 	Polygon polygon;
 	Item(float, float, Item_Type, Item_Form);
-	void get_coord(float&, float&);
+	float get_coord_x();
+	float get_coord_y();
 	Item_Type get_item_type();
+	void set_coord(float&, float&);
 	void set_item_type();
 	void make_volume(Item_Form form);
 

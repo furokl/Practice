@@ -9,6 +9,7 @@ enum class Robot_State
 	TAKE_TRASH,
 	TAKE_OUT_TRASH,
 	ROTATED,
+	ROTATED_TO_TRASH_CAN,
 	MAX_ROBOT_STATE
 };
 

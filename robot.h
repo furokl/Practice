@@ -4,6 +4,7 @@
 #include <string>
 
 #include "enum_states.h"
+#include "item.h"
 #include "camera.h"
 
 class Robot
@@ -24,20 +25,23 @@ private:
 
 	sf::SoundBuffer move_buffer;
 	sf::SoundBuffer rotate_buffer;
+	sf::SoundBuffer take_out_buffer;
 	sf::Sound move_sound;
 	sf::Sound rotate_sound;
+	sf::Sound take_out_sound;
 
 public:
 	Robot(float, float);
-	void rotate();
 	void calc_azimuth(Camera&);
-	void move(Camera&);
-	void take_object();
-	void take_out_object();
+	void calc_azimuth(Item&);
+	void move(Camera&, Item&, Item&);
+	void take_object(Item&);
+	void take_out_object(Item&);
 	void set_state(Robot_State);
 	const std::string get_state();
 	void move_robot();
-	void turn_robot();
+	void turn_right();
+	void turn_left();
 
 	// SFML
 

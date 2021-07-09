@@ -1,8 +1,6 @@
 #include <iostream>
-#include <Windows.h>
-// for <Windows.h>
-#undef min
-#undef max
+#include <thread>
+#include <chrono>
 
 #include "control_system.h"
 #include "math_const.h"
@@ -22,64 +20,107 @@ Robot::Robot(float x_, float y_)
 	rotate_buffer.loadFromFile("C:\\Users\\User\\source\\repos\\RoboTrash_SFML\\redist\\rotate.ogg");
 	rotate_sound.setBuffer(rotate_buffer);
 	rotate_sound.setVolume(control_system::sound_master);
-}
 
-void Robot::rotate() {
-	angle += control_system::robot_rotate;
-	Sleep(10);
+	take_out_buffer.loadFromFile("C:\\Users\\User\\source\\repos\\RoboTrash_SFML\\redist\\take_out.ogg");
+	take_out_sound.setBuffer(take_out_buffer);
+	take_out_sound.setVolume(control_system::sound_master);
 }
 
 void Robot::calc_azimuth(Camera &camera) {
 	camera.set_detect_coord(detect_x, detect_y);
 	float azimuth_rad = atan2(detect_y - y, detect_x - x);
 	azimuth = azimuth_rad * 180.f / math_const::PI;
-
-	if (azimuth < 0)
-		azimuth += 360;
-	if (azimuth > 360)
-		azimuth = 0;
 }
 
-void Robot::move(Camera &camera) {
-	if(camera.get_detect())
+void Robot::calc_azimuth(Item& trash_can) {
+	float azimuth_rad = atan2(
+		trash_can.get_coord_y() - y,
+		trash_can.get_coord_x() - x);
+	azimuth = azimuth_rad * 180.f / math_const::PI;
+}
+
+void Robot::move(Camera &camera, Item &item, Item &trash_can) {
+	switch (state)
 	{
-		switch (state)	
+	case Robot_State::WAITING:
+		if (camera.get_detect())
 		{
-		case Robot_State::WAITING:
-			if (camera.get_detect())
-				state = Robot_State::ROTATED;
-			break;
-
-		case Robot_State::ROTATED:
-			calc_azimuth(camera);
-			turn_robot();
-			if (static_cast<int>(angle) == static_cast<int>(azimuth))
-				state = Robot_State::MOVING_TO_TRASH;
-			break;
-
-		case Robot_State::MOVING_TO_TRASH:
-			if ((abs(detect_x - x) > control_system::robot_detect)
-				&& (abs(detect_y - y) > control_system::robot_detect))
-			{
-				move_robot();
-				x += cos(azimuth / 180.f * math_const::PI) * control_system::robot_step;
-				y += sin(azimuth / 180.f * math_const::PI) * control_system::robot_step;
-			}
-			else
-			{
-				camera.set_detect_false();
-				state = Robot_State::TAKE_TRASH;
-			}
-			break;
+			state = Robot_State::ROTATED;
 		}
+		break;
+
+	case Robot_State::ROTATED:
+		calc_azimuth(camera);
+		((azimuth - angle) < 0) ? turn_right() : turn_left();
+
+		if (static_cast<int>(angle) == static_cast<int>(azimuth))
+		{
+			state = Robot_State::MOVING_TO_TRASH;
+		}
+		break;
+
+	case Robot_State::MOVING_TO_TRASH:
+		move_robot();
+		x += cos(azimuth / 180.f * math_const::PI) * control_system::robot_step;
+		y += sin(azimuth / 180.f * math_const::PI) * control_system::robot_step;
+
+		if (((abs(detect_x - x)) < control_system::robot_detect)
+			&& ((abs(detect_y - y)) < control_system::robot_detect))
+		{
+			camera.set_detect_false();
+			state = Robot_State::TAKE_TRASH;
+		}
+		break;
+
+	case Robot_State::TAKE_TRASH:
+		take_object(item);
+
+		if ((abs((item.get_coord_x() - x) / control_system::robot_throw) < 0.1f)
+			&& (abs((item.get_coord_y() - y) / control_system::robot_throw) < 0.1f))
+		{
+			state = Robot_State::ROTATED_TO_TRASH_CAN;
+		}
+		break;
+
+	case Robot_State::ROTATED_TO_TRASH_CAN:
+		calc_azimuth(trash_can);
+		((azimuth - angle) < 0) ? turn_right() : turn_left();
+
+		if (static_cast<int>(angle) == static_cast<int>(azimuth))
+		{
+			state = Robot_State::MOVING_TO_TRASH_CAN;
+		}
+		break;
+
+	case Robot_State::MOVING_TO_TRASH_CAN:
+		move_robot();
+		x += cos(azimuth / 180.f * math_const::PI) * control_system::robot_step2;
+		y += sin(azimuth / 180.f * math_const::PI) * control_system::robot_step2;
+		item.set_coord(x, y);
+
+		if ((abs(trash_can.get_coord_x() - x) < control_system::robot_detect)
+			&& (abs(trash_can.get_coord_y() - y) < control_system::robot_detect))
+		{
+			state = Robot_State::TAKE_OUT_TRASH;
+		}
+		break;
 	}
 }
 
-void Robot::take_object() {
+void Robot::take_object(Item &item) {
+	float
+		temp_x{ item.get_coord_x() },
+		temp_y{ item.get_coord_y() };
 
+	std::this_thread::sleep_for(std::chrono::milliseconds(5));
+
+	temp_x += (x - item.get_coord_x()) / control_system::robot_throw;
+	temp_y += (y - item.get_coord_y()) / control_system::robot_throw;
+
+	item.set_coord(temp_x, temp_y);
 }
 
-void Robot::take_out_object() {
+void Robot::take_out_object(Item &item) {
 
 }
 
@@ -115,12 +156,39 @@ const std::string Robot::get_state() {
 }
 
 void Robot::move_robot() {
-	rotate_x += cos(azimuth / 180.f * math_const::PI) * control_system::robot_step;
-	rotate_y += sin(azimuth / 180.f * math_const::PI) * control_system::robot_step;
+	switch (state) {
+	case Robot_State::MOVING_TO_TRASH:
+		rotate_x += cos(azimuth / 180.f * math_const::PI) * control_system::robot_step;
+		rotate_y += sin(azimuth / 180.f * math_const::PI) * control_system::robot_step;
+		break;
+
+	case Robot_State::MOVING_TO_TRASH_CAN:
+		rotate_x += cos(azimuth / 180.f * math_const::PI) * control_system::robot_step2;
+		rotate_y += sin(azimuth / 180.f * math_const::PI) * control_system::robot_step2;
+		break;
+	}
 }
 
-void Robot::turn_robot() {
-	rotate();
+void Robot::turn_right() {
+	angle -= control_system::robot_rotate;
+	
+	std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+	float
+		x0{ x - control_system::robot_displacement },
+		y0{ y - control_system::robot_displacement },
+		angle_rad = -math_const::PI / 180.f;
+
+	rotate_x = (rotate_x - x0) * cos(angle_rad) - (rotate_y - y0) * sin(angle_rad) + x0;
+	rotate_y = (rotate_x - x0) * sin(angle_rad) + (rotate_y - y0) * cos(angle_rad) + y0;
+
+	robot_sprite.setRotation(angle);
+}
+
+void Robot::turn_left() {
+	angle += control_system::robot_rotate;
+	
+	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
 	float
 		x0{ x - control_system::robot_displacement },
@@ -140,12 +208,6 @@ void Robot::draw_robot(sf::RenderWindow& window) {
 	robot_sprite.move(
 		control_system::robot_displacement,
 		control_system::robot_displacement);
-	
-	// <- del
-	sf::CircleShape circle(5.f);
-	circle.setFillColor(sf::Color(255, 0, 0, 100));
-	circle.setPosition(x, y);
-	window.draw(circle);
 
 	window.draw(robot_sprite);
 }
@@ -172,10 +234,22 @@ void Robot::play_sound() {
 		move_sound.stop();
 		break;
 
-	case Robot_State::MOVING_TO_TRASH_CAN:
+	case Robot_State::ROTATED_TO_TRASH_CAN:
+		move_sound.stop();
+		if (!rotate_sound.getStatus())
+			rotate_sound.play();
 		break;
 
 	case Robot_State::TAKE_OUT_TRASH:
+		move_sound.stop();
+		if (!take_out_sound.getStatus())
+			take_out_sound.play();
+		break;
+
+	case Robot_State::MOVING_TO_TRASH_CAN:
+		rotate_sound.stop();
+		if (!move_sound.getStatus())
+			move_sound.play();
 		break;
 	}
 }

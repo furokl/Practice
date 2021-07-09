@@ -7,17 +7,21 @@ namespace control_system
 		camera_rotate{ 0.05f },
 		robot_rotate{ 1.f },
 		robot_step{ 0.075f },
+		robot_step2{ 2.f },
 		beam_step{ 0.05f };
 
 	const int
 		camera_displacement{ -13 },
 		robot_displacement{ -25 },
 		item_displacement{ -15 },
+		can_displacement{ -25 },
 		circle_displacement{ -150 },
+
 		item_stretch{ 20 },
 		beam_circle{ 150 },
 		sound_master{ 25 },
-		robot_detect{ 10 },
+		robot_detect{ 30 },
+		robot_throw{ 15 },
 		beam_range{ static_cast<int>((1.f / beam_step) * 150) };
 }
 

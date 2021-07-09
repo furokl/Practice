@@ -1,9 +1,7 @@
 #include <iostream>
 #include <cmath>
-#include <Windows.h>
-// for <Windows.h>
-#undef min
-#undef max
+#include <thread>
+#include <chrono>
 
 #include "control_system.h"
 #include "math_const.h"
@@ -25,7 +23,8 @@ Camera::Camera(float x_, float y_)
 
 void Camera::rotate() {
 	angle += control_system::camera_rotate;
-	Sleep(20);
+	
+	std::this_thread::sleep_for(std::chrono::milliseconds(20));
 
 	if (angle >= 360.f)
 		angle = 0.f;
@@ -51,7 +50,6 @@ void Camera::make_beam(Item &item) {
 					detect_sound.play();
 					item.set_item_type();
 				}
-
 				break;
 			}
 		}
