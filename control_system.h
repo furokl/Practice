@@ -6,8 +6,7 @@ namespace control_system
 	const float
 		camera_rotate{ 0.05f },
 		robot_rotate{ 1.f },
-		robot_step{ 0.075f },
-		robot_step2{ 2.f },
+		robot_step{ 0.15f },
 		beam_step{ 0.05f };
 
 	const int

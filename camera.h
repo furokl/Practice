@@ -49,6 +49,7 @@ public:
 	void draw_beam(sf::RenderWindow&, Item&);
 	void draw_camera(sf::RenderWindow&);
 	void draw_beam_range(sf::RenderWindow&);
+
 };
 
 #endif // !CAMERA_H

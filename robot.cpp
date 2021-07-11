@@ -1,6 +1,7 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+//#include <boost/thread/thread.hpp>
 
 #include "control_system.h"
 #include "math_const.h"
@@ -24,6 +25,11 @@ Robot::Robot(float x_, float y_)
 	take_out_buffer.loadFromFile("C:\\Users\\User\\source\\repos\\RoboTrash_SFML\\redist\\take_out.ogg");
 	take_out_sound.setBuffer(take_out_buffer);
 	take_out_sound.setVolume(control_system::sound_master);
+
+	take_buffer.loadFromFile("C:\\Users\\User\\source\\repos\\RoboTrash_SFML\\redist\\take.ogg");
+	take_sound.setBuffer(take_buffer);
+	take_sound.setVolume(control_system::sound_master);
+
 }
 
 void Robot::calc_azimuth(Camera &camera) {
@@ -37,6 +43,11 @@ void Robot::calc_azimuth(Item& trash_can) {
 		trash_can.get_coord_y() - y,
 		trash_can.get_coord_x() - x);
 	azimuth = azimuth_rad * 180.f / math_const::PI;
+}
+
+void Robot::calc_coord(float &x_, float &y_) {
+	x_ += cos(azimuth / 180.f * math_const::PI) * control_system::robot_step;
+	y_ += sin(azimuth / 180.f * math_const::PI) * control_system::robot_step;
 }
 
 void Robot::move(Camera &camera, Item &item, Item &trash_can) {
@@ -60,9 +71,8 @@ void Robot::move(Camera &camera, Item &item, Item &trash_can) {
 		break;
 
 	case Robot_State::MOVING_TO_TRASH:
-		move_robot();
-		x += cos(azimuth / 180.f * math_const::PI) * control_system::robot_step;
-		y += sin(azimuth / 180.f * math_const::PI) * control_system::robot_step;
+		calc_coord(rotate_x, rotate_y);
+		calc_coord(x, y);
 
 		if (((abs(detect_x - x)) < control_system::robot_detect)
 			&& ((abs(detect_y - y)) < control_system::robot_detect))
@@ -93,15 +103,26 @@ void Robot::move(Camera &camera, Item &item, Item &trash_can) {
 		break;
 
 	case Robot_State::MOVING_TO_TRASH_CAN:
-		move_robot();
-		x += cos(azimuth / 180.f * math_const::PI) * control_system::robot_step2;
-		y += sin(azimuth / 180.f * math_const::PI) * control_system::robot_step2;
+		calc_coord(rotate_x, rotate_y);
+		calc_coord(x, y);
 		item.set_coord(x, y);
 
 		if ((abs(trash_can.get_coord_x() - x) < control_system::robot_detect)
 			&& (abs(trash_can.get_coord_y() - y) < control_system::robot_detect))
 		{
 			state = Robot_State::TAKE_OUT_TRASH;
+		}
+		break;
+
+	case Robot_State::TAKE_OUT_TRASH:
+		take_out_object(item, trash_can);
+
+		if ((abs((item.get_coord_x() - trash_can.get_coord_x()) 
+				/ control_system::robot_throw) < 0.1f)
+			&& (abs((item.get_coord_y() - trash_can.get_coord_y()) 
+				/ control_system::robot_throw) < 0.1f))
+		{
+			state = Robot_State::WAITING;
 		}
 		break;
 	}
@@ -120,8 +141,19 @@ void Robot::take_object(Item &item) {
 	item.set_coord(temp_x, temp_y);
 }
 
-void Robot::take_out_object(Item &item) {
+void Robot::take_out_object(Item &item, Item &trash_can) {
+	float
+		temp_x{ item.get_coord_x() },
+		temp_y{ item.get_coord_y() };
 
+	std::this_thread::sleep_for(std::chrono::milliseconds(5));
+
+	temp_x += (trash_can.get_coord_x() - item.get_coord_x())
+		/ control_system::robot_throw;
+	temp_y += (trash_can.get_coord_y() - item.get_coord_y()) 
+		/ control_system::robot_throw;
+
+	item.set_coord(temp_x, temp_y);
 }
 
 void Robot::set_state(Robot_State state_) {
@@ -152,20 +184,6 @@ const std::string Robot::get_state() {
 	default:
 		std::cout << "\n!!!\tDefault case print_robot_state()" << std::endl;
 		std::exit(EXIT_FAILURE);
-	}
-}
-
-void Robot::move_robot() {
-	switch (state) {
-	case Robot_State::MOVING_TO_TRASH:
-		rotate_x += cos(azimuth / 180.f * math_const::PI) * control_system::robot_step;
-		rotate_y += sin(azimuth / 180.f * math_const::PI) * control_system::robot_step;
-		break;
-
-	case Robot_State::MOVING_TO_TRASH_CAN:
-		rotate_x += cos(azimuth / 180.f * math_const::PI) * control_system::robot_step2;
-		rotate_y += sin(azimuth / 180.f * math_const::PI) * control_system::robot_step2;
-		break;
 	}
 }
 
@@ -218,6 +236,7 @@ void Robot::play_sound() {
 	case Robot_State::WAITING:
 		//_sound.stop();
 		break;
+
 	case Robot_State::ROTATED:
 		//_sound.stop();
 		if (!rotate_sound.getStatus())
@@ -232,6 +251,8 @@ void Robot::play_sound() {
 
 	case Robot_State::TAKE_TRASH:
 		move_sound.stop();
+		if (!take_sound.getStatus())
+			take_sound.play();
 		break;
 
 	case Robot_State::ROTATED_TO_TRASH_CAN:
@@ -240,16 +261,16 @@ void Robot::play_sound() {
 			rotate_sound.play();
 		break;
 
-	case Robot_State::TAKE_OUT_TRASH:
-		move_sound.stop();
-		if (!take_out_sound.getStatus())
-			take_out_sound.play();
-		break;
-
 	case Robot_State::MOVING_TO_TRASH_CAN:
 		rotate_sound.stop();
 		if (!move_sound.getStatus())
 			move_sound.play();
+		break;
+
+	case Robot_State::TAKE_OUT_TRASH:
+		move_sound.stop();
+		if (!take_out_sound.getStatus())
+			take_out_sound.play();
 		break;
 	}
 }
