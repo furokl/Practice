@@ -17,7 +17,6 @@ int main() {
 
 	Engine RoboTrash;
 	RoboTrash.start();
-	// add chrono, thread
-	// to do item sprite
+
 	return 0;
 }

@@ -10,13 +10,19 @@
 class Robot
 {
 private:
-	bool power;
-
+	bool 
+		power;
 	float
-		x, y,
-		detect_x, detect_y,
-		rotate_x{ x }, rotate_y{ y },
-		angle{}, azimuth{};
+		x,
+		y,
+		detect_x, 
+		detect_y,
+		rotate_x{ x }, 
+		rotate_y{ y },
+		angle{},
+		azimuth{};
+	size_t 
+		detect_i;
 
 	Robot_State state{};
 
@@ -37,7 +43,7 @@ public:
 	void calc_azimuth(Camera&);
 	void calc_azimuth(Item&);
 	void calc_coord(float&, float&);
-	void move(Camera&, Item&, Item&);
+	void move(Camera&, std::vector<Item>&, Item&);
 	void take_object(Item&);
 	void take_out_object(Item&, Item&);
 	void set_state(Robot_State);

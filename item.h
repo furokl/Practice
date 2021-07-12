@@ -8,8 +8,10 @@ class Item
 {
 private:
 	float
-		x, y,
-		x_stretch, y_stretch;
+		x, 
+		y,
+		x_stretch, 
+		y_stretch;
 
 	struct Polygon 
 	{

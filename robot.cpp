@@ -50,7 +50,7 @@ void Robot::calc_coord(float &x_, float &y_) {
 	y_ += sin(azimuth / 180.f * math_const::PI) * control_system::robot_step;
 }
 
-void Robot::move(Camera &camera, Item &item, Item &trash_can) {
+void Robot::move(Camera &camera, std::vector<Item> &item, Item &trash_can) {
 	switch (state)
 	{
 	case Robot_State::WAITING:
@@ -77,16 +77,19 @@ void Robot::move(Camera &camera, Item &item, Item &trash_can) {
 		if (((abs(detect_x - x)) < control_system::robot_detect)
 			&& ((abs(detect_y - y)) < control_system::robot_detect))
 		{
+			detect_i = camera.get_detect_i();
 			camera.set_detect_false();
 			state = Robot_State::TAKE_TRASH;
 		}
 		break;
 
 	case Robot_State::TAKE_TRASH:
-		take_object(item);
+		take_object(item[detect_i]);
 
-		if ((abs((item.get_coord_x() - x) / control_system::robot_throw) < 0.1f)
-			&& (abs((item.get_coord_y() - y) / control_system::robot_throw) < 0.1f))
+		if ((abs((item[detect_i].get_coord_x() - x)
+				/ control_system::robot_throw) < 0.1f)
+			&& (abs((item[detect_i].get_coord_y() - y)
+				/ control_system::robot_throw) < 0.1f))
 		{
 			state = Robot_State::ROTATED_TO_TRASH_CAN;
 		}
@@ -105,7 +108,7 @@ void Robot::move(Camera &camera, Item &item, Item &trash_can) {
 	case Robot_State::MOVING_TO_TRASH_CAN:
 		calc_coord(rotate_x, rotate_y);
 		calc_coord(x, y);
-		item.set_coord(x, y);
+		item[detect_i].set_coord(x, y);
 
 		if ((abs(trash_can.get_coord_x() - x) < control_system::robot_detect)
 			&& (abs(trash_can.get_coord_y() - y) < control_system::robot_detect))
@@ -115,11 +118,11 @@ void Robot::move(Camera &camera, Item &item, Item &trash_can) {
 		break;
 
 	case Robot_State::TAKE_OUT_TRASH:
-		take_out_object(item, trash_can);
+		take_out_object(item[detect_i], trash_can);
 
-		if ((abs((item.get_coord_x() - trash_can.get_coord_x()) 
+		if ((abs((item[detect_i].get_coord_x() - trash_can.get_coord_x()) 
 				/ control_system::robot_throw) < 0.1f)
-			&& (abs((item.get_coord_y() - trash_can.get_coord_y()) 
+			&& (abs((item[detect_i].get_coord_y() - trash_can.get_coord_y())
 				/ control_system::robot_throw) < 0.1f))
 		{
 			state = Robot_State::WAITING;
@@ -234,11 +237,10 @@ void Robot::play_sound() {
 	switch (state)
 	{
 	case Robot_State::WAITING:
-		//_sound.stop();
+		take_out_sound.stop();
 		break;
 
 	case Robot_State::ROTATED:
-		//_sound.stop();
 		if (!rotate_sound.getStatus())
 			rotate_sound.play();
 		break;

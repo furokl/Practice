@@ -30,39 +30,38 @@ void Camera::rotate() {
 		angle = 0.f;
 }
 
-void Camera::make_beam(Item &item) {
-	if (!detect) {
-		float temp_x{ x }, temp_y{ y };
-		for (int i{}; i < control_system::beam_range; i++)
-		{
-			temp_x += sin(angle) * control_system::beam_step;
-			temp_y += cos(angle) * control_system::beam_step;
+void Camera::make_beam(std::vector <Item> &item) {
+	float temp_x{ x }, temp_y{ y };
 
-			if (((gap.x_min <= temp_x) && (temp_x <= gap.x_max)) &&
-				((gap.y_min <= temp_y) && (temp_y <= gap.y_max)))
+	for (size_t i{}; i < control_system::beam_range; i++)
+	{
+		temp_x += sin(angle) * control_system::beam_step;
+		temp_y += cos(angle) * control_system::beam_step;
+
+		for (size_t j{}; j < item.size(); j++)
+		{
+			if (((gap.x_min[j] <= temp_x) && (temp_x <= gap.x_max[j]))
+				&& ((gap.y_min[j] <= temp_y) && (temp_y <= gap.y_max[j])))
 			{
-				if (check_item(item))
+				if (check_item(item[j]))
 				{
 					state = Camera_State::DETECTED;
 					detect = true;
 					detect_x = temp_x;
 					detect_y = temp_y;
+					detect_i = j;
 					detect_sound.play();
 
-					item.set_item_type();
+					item[j].set_item_type();
 				}
 				break;
 			}
 		}
-		detect_x = temp_x;
-		detect_y = temp_y;
-		temp_x = 0.f;
-		temp_y = 0.f;
 	}
-}
-
-void Camera::make_photo() {
-
+	detect_x = temp_x;
+	detect_y = temp_y;
+	temp_x = 0.f;
+	temp_y = 0.f;
 }
 
 bool Camera::check_item(Item &item) {
@@ -72,12 +71,12 @@ bool Camera::check_item(Item &item) {
 		return false;
 }
 
-void Camera::get_photo() {
-
-}
-
 bool Camera::get_detect() {
 	return detect;
+}
+
+size_t Camera::get_detect_i() {
+	return detect_i;
 }
 
 void Camera::set_detect_false() {
@@ -89,11 +88,14 @@ void Camera::set_detect_coord(float& x_, float& y_) {
 	y_ = detect_y;
 }
 
-void Camera::set_item_points(Item& item) {
-	gap.x_min = item.polygon.point[0];
-	gap.y_min = item.polygon.point[1];
-	gap.x_max = item.polygon.point[2];
-	gap.y_max = item.polygon.point[3];
+void Camera::set_item_points(std::vector<Item> &item) {
+	for (size_t i{}; i < item.size(); i++)
+	{
+		gap.x_min.push_back(item[i].polygon.point[0]);
+		gap.y_min.push_back(item[i].polygon.point[1]);
+		gap.x_max.push_back(item[i].polygon.point[2]);
+		gap.y_max.push_back(item[i].polygon.point[3]);
+	}
 }
 
 const std::string Camera::get_state() {
@@ -122,13 +124,16 @@ const std::string Camera::get_state() {
 
 // SFML
 
-void Camera::draw_beam(sf::RenderWindow &window, Item &item) {
+void Camera::draw_beam(sf::RenderWindow &window, std::vector<Item> &item) {
 	if (!detect)
 	{
 		std::thread th_make_beam(&Camera::make_beam, this, std::ref(item));
 		std::thread th_rotate(&Camera::rotate, this);
 
-		th_make_beam.join();
+		//make_beam(item);
+		//rotate();
+
+		th_make_beam.detach();
 		th_rotate.detach();
 	}
 	

@@ -18,9 +18,9 @@ namespace control_system
 
 		item_stretch{ 20 },
 		beam_circle{ 150 },
-		sound_master{ 25 },
+		sound_master{ 15 },
 		robot_detect{ 30 },
-		robot_throw{ 15 },
+		robot_throw{ 10 },
 		beam_range{ static_cast<int>((1.f / beam_step) * 150) };
 }
 
