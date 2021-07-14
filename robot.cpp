@@ -29,7 +29,6 @@ Robot::Robot(float x_, float y_)
 	take_buffer.loadFromFile("C:\\Users\\User\\source\\repos\\RoboTrash_SFML\\redist\\take.ogg");
 	take_sound.setBuffer(take_buffer);
 	take_sound.setVolume(control_system::sound_master);
-
 }
 
 void Robot::calc_azimuth(Camera &camera) {
@@ -50,18 +49,22 @@ void Robot::calc_coord(float &x_, float &y_) {
 	y_ += sin(azimuth / 180.f * math_const::PI) * control_system::robot_step;
 }
 
-void Robot::move(Camera &camera, std::vector<Item> &item, Item &trash_can) {
+void Robot::move(std::vector<Camera> &camera, std::vector<Item> &item, Item &trash_can) {
 	switch (state)
 	{
 	case Robot_State::WAITING:
-		if (camera.get_detect())
+		for (size_t i{}; i < camera.size(); i++)
 		{
-			state = Robot_State::ROTATED;
+			if (camera[i].get_detect())
+			{
+				cam_no = i;
+				state = Robot_State::ROTATED;
+			}
 		}
 		break;
 
 	case Robot_State::ROTATED:
-		calc_azimuth(camera);
+		calc_azimuth(camera[cam_no]);
 		((azimuth - angle) < 0) ? turn_right() : turn_left();
 
 		if (static_cast<int>(angle) == static_cast<int>(azimuth))
@@ -77,8 +80,8 @@ void Robot::move(Camera &camera, std::vector<Item> &item, Item &trash_can) {
 		if (((abs(detect_x - x)) < control_system::robot_detect)
 			&& ((abs(detect_y - y)) < control_system::robot_detect))
 		{
-			detect_i = camera.get_detect_i();
-			camera.set_detect_false();
+			detect_i = camera[cam_no].get_detect_i();
+			camera[cam_no].set_detect_false();
 			state = Robot_State::TAKE_TRASH;
 		}
 		break;

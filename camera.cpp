@@ -11,14 +11,17 @@
 
 Camera::Camera(float x_, float y_)
 	: x(x_), y(y_)
-{
+{	
+	//static size_t temp{};
 	camera_texture.loadFromFile("C:\\Users\\User\\source\\repos\\RoboTrash_SFML\\redist\\camera.png");
-	camera_sprite.setColor(sf::Color(255, 255, 255, 100));
 	camera_sprite.setTexture(camera_texture);
 
 	detect_buffer.loadFromFile("C:\\Users\\User\\source\\repos\\RoboTrash_SFML\\redist\\cam.ogg");
 	detect_sound.setBuffer(detect_buffer);
-	detect_sound.setVolume(control_system::sound_master);
+}
+
+Camera::~Camera() 
+{
 }
 
 void Camera::rotate() {
@@ -127,14 +130,19 @@ const std::string Camera::get_state() {
 void Camera::draw_beam(sf::RenderWindow &window, std::vector<Item> &item) {
 	if (!detect)
 	{
-		std::thread th_make_beam(&Camera::make_beam, this, std::ref(item));
-		std::thread th_rotate(&Camera::rotate, this);
+		//std::thread th_make_beam(&Camera::make_beam, this, std::ref(item));
+		//std::thread th_rotate(&Camera::rotate, this);
+		//std::thread th([&] {
+			//make_beam(item);
+			//rotate();
+			//});
 
-		//make_beam(item);
-		//rotate();
+		//th.detach();
+		make_beam(item);
+		rotate();
 
-		th_make_beam.detach();
-		th_rotate.detach();
+		//th_make_beam.join();
+		//th_rotate.join();
 	}
 	
 	draw_beam_range(window);

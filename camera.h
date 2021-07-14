@@ -17,8 +17,8 @@ private:
 		x, 
 		y, 
 		angle{}, 
-		detect_x, 	
-		detect_y;
+		detect_x{},
+		detect_y{};
 	size_t	
 		detect_i;
 
@@ -41,6 +41,7 @@ private:
 
 public:
 	Camera(float, float);
+	~Camera();
 	bool check_item(Item &item);
 	void make_beam(std::vector<Item> &item);
 	void rotate();

@@ -19,25 +19,25 @@ Engine::Engine()
 
 void Engine::start() {
 	sf::RenderWindow window(sf::VideoMode(1100, 600), "RoboTrash");
+	//window.setFramerateLimit(60);
 
 	std::vector<Item> item;
 	item.push_back(Item(400.f, 330.f, Item_Type::TRASH, Item_Form::RECTANGLE));
 	item.push_back(Item(350.f, 230.f, Item_Type::TRASH, Item_Form::RECTANGLE));
 	item.push_back(Item(500.f, 350.f, Item_Type::TRASH, Item_Form::RECTANGLE));
-
-	Item trash_can(700.f, 120.f, Item_Type::TRASH_CAN, Item_Form::RECTANGLE);
-	/*
 	std::vector<Robot> robot;
 	robot.push_back(Robot(200.f, 450.f));
 	robot.push_back(Robot(700.f, 450.f));
 	robot.push_back(Robot(400.f, 450.f));
-	*/
-	Robot robot(200.f, 450.f);
+	std::vector<Camera> camera;
+	camera.push_back(Camera(450.f, 250.f));
+	camera.push_back(Camera(500.f, 400.f));
+	Item trash_can(700.f, 120.f, Item_Type::TRASH_CAN, Item_Form::RECTANGLE);
 
-	Camera camera(450.f, 250.f);
-
-
-	camera.set_item_points(item);
+	for (size_t i{}; i < camera.size(); i++)
+	{
+		camera[i].set_item_points(item);
+	}
 
 	while (window.isOpen())
 	{
@@ -53,25 +53,22 @@ void Engine::start() {
 		window.clear(sf::Color(225,225,225));
 		window.draw(background_sprite);
 		
-		robot.draw_robot(window);
-		std::thread th_robot_move([&] {
-			robot.move(camera, item, trash_can);
-			robot.play_sound();
-			});
-		th_robot_move.detach();
-		/*
-		for (size_t i{}; i < robot.size(); i++)
+		for (size_t i{}; i < robot.size(); i++)			// ROBOT
 		{
 			robot[i].draw_robot(window);
 			robot[i].move(camera, item, trash_can);
 			robot[i].play_sound();
 		}
-		*/
+		
 
-		camera.draw_camera(window);
-		camera.draw_beam(window, item);
+		for (size_t i{}; i < camera.size(); i++)		// CAMERA
+		{
+			camera[i].draw_camera(window);
+			camera[i].draw_beam(window, item);
+		}
 
-		trash_can.draw_trash_can(window);
+		trash_can.draw_trash_can(window);				// ITEM
+		
 		for (size_t i{}; i < item.size(); i++)
 		{
 			item[i].draw_item(window);

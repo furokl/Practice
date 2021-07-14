@@ -78,7 +78,7 @@ void Item::make_volume(Item_Form form) {
 
 // SFML
 
-void Item::draw_item(sf::RenderWindow& window) {
+void Item::draw_item(sf::RenderWindow &window) {
 	item_sprite.setPosition(x, y);
 	item_sprite.move(
 		control_system::item_displacement,
@@ -87,7 +87,7 @@ void Item::draw_item(sf::RenderWindow& window) {
 	window.draw(item_sprite);
 }
 
-void Item::draw_trash_can(sf::RenderWindow& window) {
+void Item::draw_trash_can(sf::RenderWindow &window) {
 	trash_can_sprite.setPosition(x, y);
 	trash_can_sprite.move(
 		control_system::can_displacement,
