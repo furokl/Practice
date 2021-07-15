@@ -1,5 +1,9 @@
 #include <iostream>
 #include <thread>
+#include <Windows.h>
+// for <Windows.h>
+#undef min
+#undef max
 
 #include "admin.h"
 #include "robot.h"
@@ -7,6 +11,8 @@
 #include "item.h"
 
 #include "engine.h"
+
+
 
 Engine::Engine()
 {
@@ -18,27 +24,33 @@ Engine::Engine()
 }
 
 void Engine::start() {
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
 	sf::RenderWindow window(sf::VideoMode(1100, 600), "RoboTrash");
-	//window.setFramerateLimit(60);
+	window.setFramerateLimit(60);
 
-	std::vector<Item> item;
-	item.push_back(Item(400.f, 330.f, Item_Type::TRASH, Item_Form::RECTANGLE));
-	item.push_back(Item(350.f, 230.f, Item_Type::TRASH, Item_Form::RECTANGLE));
-	item.push_back(Item(500.f, 350.f, Item_Type::TRASH, Item_Form::RECTANGLE));
-	std::vector<Robot> robot;
-	robot.push_back(Robot(200.f, 450.f));
-	robot.push_back(Robot(700.f, 450.f));
-	robot.push_back(Robot(400.f, 450.f));
-	std::vector<Camera> camera;
-	camera.push_back(Camera(450.f, 250.f));
-	camera.push_back(Camera(500.f, 400.f));
-	Item trash_can(700.f, 120.f, Item_Type::TRASH_CAN, Item_Form::RECTANGLE);
-
+	std::vector<Item> item{
+	Item(400.f, 330.f, Item_Type::TRASH, Item_Form::RECTANGLE),
+	Item(500.f, 230.f, Item_Type::TRASH, Item_Form::RECTANGLE),
+	Item(540.f, 400.f, Item_Type::TRASH, Item_Form::RECTANGLE)
+	};
+	std::vector<Robot> robot{
+	Robot(200.f, 450.f),
+	Robot(700.f, 450.f),
+	Robot(400.f, 450.f)
+	};
+	std::vector<Camera> camera{
+	Camera(450.f, 250.f),
+	Camera(500.f, 400.f)
+	};
 	for (size_t i{}; i < camera.size(); i++)
 	{
 		camera[i].set_item_points(item);
 	}
+	Item trash_can(700.f, 120.f, Item_Type::TRASH_CAN, Item_Form::RECTANGLE);
 
+	sf::Clock clock = sf::Clock::Clock();
+	sf::Time previous_time = clock.getElapsedTime();
 	while (window.isOpen())
 	{
 		sf::Event event;
@@ -50,31 +62,49 @@ void Engine::start() {
 				window.close();
 			}
 		}
+		// BEGIN
 		window.clear(sf::Color(225,225,225));
 		window.draw(background_sprite);
 		
-		for (size_t i{}; i < robot.size(); i++)			// ROBOT
+		// ROBOT
+		for (auto &robot_ : robot)
 		{
-			robot[i].draw_robot(window);
-			robot[i].move(camera, item, trash_can);
-			robot[i].play_sound();
+			robot_.draw_robot(window);
+			std::thread th_robot_move([&] {
+				robot_.move(camera, item, trash_can);
+				robot_.play_sound();
+				});
+			th_robot_move.detach();
 		}
 		
-
-		for (size_t i{}; i < camera.size(); i++)		// CAMERA
+		// CAMERA
+		for (auto &camera_ : camera)
 		{
-			camera[i].draw_camera(window);
-			camera[i].draw_beam(window, item);
+			camera_.draw_camera(window);
+			camera_.draw_beam(window, item);
 		}
 
-		trash_can.draw_trash_can(window);				// ITEM
-		
-		for (size_t i{}; i < item.size(); i++)
+		// ITEMS
+		trash_can.draw_trash_can(window);
+		for (auto &item_ : item)
 		{
-			item[i].draw_item(window);
+			item_.draw_item(window);
 		}
 
+		// END
 		window.draw(walls_sprite);
 		window.display();
+
+		// FPS
+		current_time = clock.getElapsedTime();	
+		fps = 1.f / (current_time.asSeconds() - previous_time.asSeconds());
+		if (fps < 30.f) 
+			SetConsoleTextAttribute(hConsole, (WORD)((Black << 4) | Red));
+		else if ((30.f < fps) && (fps < 60.f))
+			SetConsoleTextAttribute(hConsole, (WORD)((Black << 4) | Yellow));
+		else if (fps > 60.f)
+			SetConsoleTextAttribute(hConsole, (WORD)((Black << 4) | LightGreen));
+		std::cout << "\t*\t" << floor(fps) << "\t*" << std::endl;
+		previous_time = current_time;
 	}
 }

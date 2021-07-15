@@ -9,14 +9,14 @@ namespace control_system
 	const float
 		camera_rotate{ 0.05f },
 		robot_rotate{ 1.f },
-		robot_step{ 0.15f },
+		robot_step{ 2.f },
 		beam_step{ 0.05f };
 
 	const int
 		camera_displacement{ -13 },
 		robot_displacement{ -25 },
-		item_displacement{ -15 },
-		can_displacement{ -25 },
+		item_displacement{ 0 },
+		can_displacement{ -10 },
 		circle_displacement{ -150 },
 
 		item_stretch{ 20 },

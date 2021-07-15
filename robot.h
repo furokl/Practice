@@ -39,6 +39,7 @@ private:
 	sf::Sound take_sound;
 	sf::Sound take_out_sound;
 
+
 public:
 	Robot(float, float);
 	void calc_azimuth(Camera&);

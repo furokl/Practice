@@ -59,6 +59,7 @@ void Robot::move(std::vector<Camera> &camera, std::vector<Item> &item, Item &tra
 			{
 				cam_no = i;
 				state = Robot_State::ROTATED;
+				detect_i = camera[cam_no].get_detect_i(); //
 			}
 		}
 		break;
@@ -71,19 +72,36 @@ void Robot::move(std::vector<Camera> &camera, std::vector<Item> &item, Item &tra
 		{
 			state = Robot_State::MOVING_TO_TRASH;
 		}
+		
 		break;
 
 	case Robot_State::MOVING_TO_TRASH:
-		calc_coord(rotate_x, rotate_y);
-		calc_coord(x, y);
+		if (item[detect_i].get_item_type() == Item_Type::TRASH)
+		{
+			calc_coord(rotate_x, rotate_y);
+			calc_coord(x, y);
+		}
+		//std::cout << std::boolalpha
+		//	<< "TRASH\t" << (item[detect_i].get_item_type() == Item_Type::TRASH) << '\n'
+		//	<< "NOT_TRASH\t" << (item[detect_i].get_item_type() == Item_Type::NOT_TRASH) << '\n'
+		//	<< "TRASH_CAN\t" << (item[detect_i].get_item_type() == Item_Type::TRASH_CAN) << '\n' << std::endl;
+		//	calc_coord(rotate_x, rotate_y);
+		//	calc_coord(x, y);
+		//
+		else
+		{
+			state = Robot_State::WAITING;
+		}
+		
 
 		if (((abs(detect_x - x)) < control_system::robot_detect)
 			&& ((abs(detect_y - y)) < control_system::robot_detect))
-		{
-			detect_i = camera[cam_no].get_detect_i();
+		{ 
+			item[detect_i].set_item_type();
 			camera[cam_no].set_detect_false();
 			state = Robot_State::TAKE_TRASH;
 		}
+
 		break;
 
 	case Robot_State::TAKE_TRASH:
@@ -166,7 +184,7 @@ void Robot::set_state(Robot_State state_) {
 	state = state_;
 }
 
-const std::string Robot::get_state() {
+const std::string Robot::get_state() { // to do admin cpp
 	switch (state)
 	{
 	case Robot_State::WAITING:

@@ -83,7 +83,6 @@ void Item::draw_item(sf::RenderWindow &window) {
 	item_sprite.move(
 		control_system::item_displacement,
 		control_system::item_displacement);
-
 	window.draw(item_sprite);
 }
 
