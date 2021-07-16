@@ -71,6 +71,13 @@ bool Camera::check_item(Item &item) {
 	else
 		return false;
 }
+float Camera::get_coord_x() {
+	return x;
+}
+
+float Camera::get_coord_y() {
+	return y;
+}
 
 bool Camera::get_detect() {
 	return detect;

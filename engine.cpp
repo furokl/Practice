@@ -6,8 +6,6 @@
 #undef max
 
 #include "admin.h"
-#include "robot.h"
-#include "camera.h"
 #include "item.h"
 
 #include "engine.h"
@@ -32,7 +30,9 @@ void Engine::start() {
 	std::vector<Item> item{
 	Item(400.f, 330.f, Item_Type::TRASH, Item_Form::RECTANGLE),
 	Item(500.f, 230.f, Item_Type::TRASH, Item_Form::RECTANGLE),
-	Item(540.f, 400.f, Item_Type::TRASH, Item_Form::RECTANGLE)
+	Item(540.f, 400.f, Item_Type::TRASH, Item_Form::RECTANGLE),
+	Item(345.f, 400.f, Item_Type::TRASH, Item_Form::RECTANGLE)
+
 	};
 	std::vector<Robot> robot{
 	Robot(200.f, 450.f),
@@ -41,47 +41,117 @@ void Engine::start() {
 	};
 	std::vector<Camera> camera{
 	Camera(450.f, 250.f),
-	Camera(500.f, 400.f)
+	Camera(500.f, 400.f),
+	Camera(400.f, 100.f)
 	};
 	for (size_t i{}; i < camera.size(); i++)
 	{
 		camera[i].set_item_points(item);
 	}
 	Item trash_can(700.f, 120.f, Item_Type::TRASH_CAN, Item_Form::RECTANGLE);
+	Admin admin(robot, camera);
+
+	admin.set_camera_on();
+	admin.set_robot_on();
+	admin.set_camera_off(0);
+	admin.set_robot_off(0);
 
 	sf::Clock clock = sf::Clock::Clock();
 	sf::Time previous_time = clock.getElapsedTime();
 	while (window.isOpen())
 	{
+
+		sf::Vector2i mouse = sf::Mouse::getPosition(window);
 		sf::Event event;
+
 		while (window.pollEvent(event))
 		{
-			switch (event.type)
-			{
-			case sf::Event::Closed:
+			// WINDOW
+			if (event.type == sf::Event::Closed)
 				window.close();
+			if (event.type == sf::Event::LostFocus)
+				std::getchar();
+
+			// MOUSE
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) 
+			{
+				for (size_t i{}; i < camera.size(); i++)
+				{
+					if (((camera[i].get_coord_x() - 10.f < mouse.x) 
+							&& (mouse.x < camera[i].get_coord_x() + 10.f))
+						&& ((camera[i].get_coord_y() - 10.f < mouse.y) 
+							&& (mouse.y < camera[i].get_coord_y() + 10.f)))
+					{
+						admin.set_camera_on(i);
+					}
+				}
+				for (size_t i{}; i < robot.size(); i++)
+				{
+					if (((robot[i].get_coord_x() - 10.f < mouse.x)
+						&& (mouse.x < robot[i].get_coord_x() + 10.f))
+						&& ((robot[i].get_coord_y() - 10.f < mouse.y)
+							&& (mouse.y < robot[i].get_coord_y() + 10.f)))
+					{
+						admin.set_robot_on(i);
+					}
+				}
+			}
+
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
+			{
+				for (size_t i{}; i < camera.size(); i++)
+				{
+					if (((camera[i].get_coord_x() - 10.f < mouse.x)
+							&& (mouse.x < camera[i].get_coord_x() + 10.f))
+						&& ((camera[i].get_coord_y() - 10.f < mouse.y)
+							&& (mouse.y < camera[i].get_coord_y() + 10.f)))
+					{
+						admin.set_camera_off(i);
+					}
+				}
+				for (size_t i{}; i < robot.size(); i++)
+				{
+					if (((robot[i].get_coord_x() - 10.f < mouse.x)
+						&& (mouse.x < robot[i].get_coord_x() + 10.f))
+						&& ((robot[i].get_coord_y() - 10.f < mouse.y)
+							&& (mouse.y < robot[i].get_coord_y() + 10.f)))
+					{
+						admin.set_robot_off(i);
+					}
+				}
 			}
 		}
+
 		// BEGIN
 		window.clear(sf::Color(225,225,225));
 		window.draw(background_sprite);
-		
+
 		// ROBOT
+		size_t temp_r{};
 		for (auto &robot_ : robot)
 		{
 			robot_.draw_robot(window);
-			std::thread th_robot_move([&] {
-				robot_.move(camera, item, trash_can);
-				robot_.play_sound();
-				});
-			th_robot_move.detach();
+
+			if (admin.get_robot_power(temp_r))
+			{
+				th_robot_move = std::thread([&] {
+					robot_.move(camera, item, trash_can);
+					robot_.play_sound();
+					});
+				th_robot_move.detach();
+			}
+			temp_r++;
 		}
-		
+
 		// CAMERA
-		for (auto &camera_ : camera)
+		for (size_t i{}; i < camera.size(); i++)
 		{
-			camera_.draw_camera(window);
-			camera_.draw_beam(window, item);
+			camera[i].draw_camera(window);
+
+			if (admin.get_camera_power(i))
+			{
+				camera[i].draw_beam(window, item);
+			}
 		}
 
 		// ITEMS

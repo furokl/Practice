@@ -81,13 +81,6 @@ void Robot::move(std::vector<Camera> &camera, std::vector<Item> &item, Item &tra
 			calc_coord(rotate_x, rotate_y);
 			calc_coord(x, y);
 		}
-		//std::cout << std::boolalpha
-		//	<< "TRASH\t" << (item[detect_i].get_item_type() == Item_Type::TRASH) << '\n'
-		//	<< "NOT_TRASH\t" << (item[detect_i].get_item_type() == Item_Type::NOT_TRASH) << '\n'
-		//	<< "TRASH_CAN\t" << (item[detect_i].get_item_type() == Item_Type::TRASH_CAN) << '\n' << std::endl;
-		//	calc_coord(rotate_x, rotate_y);
-		//	calc_coord(x, y);
-		//
 		else
 		{
 			state = Robot_State::WAITING;
@@ -209,6 +202,14 @@ const std::string Robot::get_state() { // to do admin cpp
 		std::cout << "\n!!!\tDefault case print_robot_state()" << std::endl;
 		std::exit(EXIT_FAILURE);
 	}
+}
+
+float Robot::get_coord_x() {
+	return x;
+}
+
+float Robot::get_coord_y() {
+	return y;
 }
 
 void Robot::turn_right() {

@@ -4,6 +4,9 @@
 #include <SFML/Graphics.hpp>
 #include <thread>
 
+#include "robot.h"
+#include "camera.h"
+
 class Engine
 {
 private:
@@ -21,13 +24,14 @@ private:
 	sf::Time previous_time;
 	sf::Time current_time;
 
-	std::thread
-		th_robot_move;
+	sf::Vector2i mouse;
+
+	std::thread th_robot_move;
 
 public:
 	Engine();
 	void start();
-	
+	void click(std::vector<Camera>&, std::vector<Robot>&);
 };
 
 #endif // !ENGINE_H

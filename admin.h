@@ -6,11 +6,25 @@
 
 class Admin
 {
+	std::vector<bool>
+		robot_power,
+		camera_power;
 public:
-	void robot_on();
-	void robot_off();
-	void camera_on();
-	void camera_off();
+	Admin(std::vector<Robot>&, std::vector<Camera>&);
+
+	void set_robot_on(size_t);
+	void set_camera_on(size_t);
+	void set_robot_off(size_t);
+	void set_camera_off(size_t);
+	bool get_robot_power(size_t);
+	bool get_camera_power(size_t);
+	void set_robot_on();
+	void set_camera_on();
+	void set_robot_off();
+	void set_camera_off();
+	bool get_robot_power();
+	bool get_camera_power();
+
 	void add_item();
 	void add_robot();
 	void add_camera();

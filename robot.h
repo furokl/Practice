@@ -10,8 +10,6 @@
 class Robot
 {
 private:
-	bool 
-		power;
 	float
 		x,
 		y,
@@ -50,6 +48,8 @@ public:
 	void take_out_object(Item&, Item&);
 	void set_state(Robot_State);
 	const std::string get_state();
+	float get_coord_x();
+	float get_coord_y();
 	void move_robot();
 	void turn_right();
 	void turn_left();

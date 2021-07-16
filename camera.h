@@ -11,7 +11,6 @@ class Camera
 {
 private:
 	bool	
-		power, 
 		detect{};
 	float	
 		x, 
@@ -45,6 +44,8 @@ public:
 	bool check_item(Item &item);
 	void make_beam(std::vector<Item> &item);
 	void rotate();
+	float get_coord_x();
+	float get_coord_y();
 	bool get_detect();
 	size_t get_detect_i();
 	void set_detect_false();
