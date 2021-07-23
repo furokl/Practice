@@ -7,6 +7,9 @@
 class Item
 {
 private:
+	std::string
+		file_path{ "C:\\Users\\Даниил\\source\\repos\\RoboTrash_SFML\\redist\\" },
+		file_name;
 	float
 		x, 
 		y,

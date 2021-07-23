@@ -10,7 +10,11 @@
 class Camera
 {
 private:
+	std::string
+		file_path{ "C:\\Users\\Даниил\\source\\repos\\RoboTrash_SFML\\redist\\" },
+		file_name;
 	bool	
+		thread_flag{ true },
 		detect{};
 	float	
 		x, 
@@ -50,8 +54,8 @@ public:
 	size_t get_detect_i();
 	void set_detect_false();
 	void set_detect_coord(float&, float&);
-	void set_item_points(std::vector<Item> &item);
-	const std::string get_state();
+	void set_item_points(std::vector<Item>&);
+	void set_thread_flag(bool);
 
 	// SFML
 

@@ -10,6 +10,11 @@
 class Robot
 {
 private:
+	std::string
+		file_path{ "C:\\Users\\Даниил\\source\\repos\\RoboTrash_SFML\\redist\\" },
+		file_name;
+	bool
+		thread_flag{ true };
 	float
 		x,
 		y,
@@ -20,10 +25,22 @@ private:
 		angle{},
 		azimuth{};
 	size_t
+		collision_j,
 		detect_i,
 		cam_no;
 
+	struct Temp_State
+	{
+		Robot_State i, j;
+	};
+	struct Temp_Angle
+	{
+		float r, l;
+	};
+
 	Robot_State state{};
+	Temp_State temp_state;
+	Temp_Angle temp_angle;
 
 	sf::Texture robot_texture;
 	sf::Sprite robot_sprite;
@@ -43,14 +60,14 @@ public:
 	void calc_azimuth(Camera&);
 	void calc_azimuth(Item&);
 	void calc_coord(float&, float&);
+	void calc_coord(float&, float&, float&);
 	void move(std::vector<Camera>&, std::vector<Item>&, Item&);
 	void take_object(Item&);
 	void take_out_object(Item&, Item&);
 	void set_state(Robot_State);
-	const std::string get_state();
+	void set_thread_flag(bool);
 	float get_coord_x();
 	float get_coord_y();
-	void move_robot();
 	void turn_right();
 	void turn_left();
 

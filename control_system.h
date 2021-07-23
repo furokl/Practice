@@ -1,11 +1,10 @@
 #ifndef CONTROL_SYSTEM_H
 #define CONTROL_SYSTEM_H
 
+#include <string>
+
 namespace control_system
 {
-	const char
-		file[] = "C:\\Users\\User\\source\\repos\\RoboTrash_SFML\\redist\\";
-
 	const float
 		camera_rotate{ 0.05f },
 		robot_rotate{ 1.f },

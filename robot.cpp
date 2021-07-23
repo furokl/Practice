@@ -1,32 +1,67 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
-//#include <boost/thread/thread.hpp>
+#include <mutex>
 
 #include "control_system.h"
 #include "math_const.h"
-
 #include "robot.h"
+
+std::mutex mtx1;
+std::mutex mtx2;
+std::thread thr;
 
 Robot::Robot(float x_, float y_)
 	: x(x_), y(y_)
 {
-	robot_texture.loadFromFile("C:\\Users\\User\\source\\repos\\RoboTrash_SFML\\redist\\robot.png");
+	// IMAGE
+	file_name = "robot.png";
+	robot_texture.loadFromFile(file_path + file_name);
+	if (!robot_texture.loadFromFile(file_path + file_name))
+	{
+		std::cout << "\n!!!\tloadFromFile(" << file_name << ')' << std::endl;
+		std::exit(EXIT_FAILURE);
+	}
 	robot_sprite.setTexture(robot_texture);
 
-	move_buffer.loadFromFile("C:\\Users\\User\\source\\repos\\RoboTrash_SFML\\redist\\move_mid.ogg");
+	// SOUND
+	file_name = "move_mid.ogg";
+	move_buffer.loadFromFile(file_path + file_name);
+	if (!move_buffer.loadFromFile(file_path + file_name))
+	{
+		std::cout << "\n!!!\tloadFromFile(\t" << file_name << ')' << std::endl;
+		std::exit(EXIT_FAILURE);
+	}
 	move_sound.setBuffer(move_buffer);
 	move_sound.setVolume(control_system::sound_master);
 
-	rotate_buffer.loadFromFile("C:\\Users\\User\\source\\repos\\RoboTrash_SFML\\redist\\rotate.ogg");
+	file_name = "rotate.ogg";
+	rotate_buffer.loadFromFile(file_path + file_name);
+	if (!rotate_buffer.loadFromFile(file_path + file_name))
+	{
+		std::cout << "\n!!!\tloadFromFile(\t" << file_name << ')' << std::endl;
+		std::exit(EXIT_FAILURE);
+	}
 	rotate_sound.setBuffer(rotate_buffer);
 	rotate_sound.setVolume(control_system::sound_master);
 
-	take_out_buffer.loadFromFile("C:\\Users\\User\\source\\repos\\RoboTrash_SFML\\redist\\take_out.ogg");
+	file_name = "take_out.ogg";
+	take_out_buffer.loadFromFile(file_path + file_name);
+	if (!take_out_buffer.loadFromFile(file_path + file_name))
+	{
+		std::cout << "\n!!!\tloadFromFile(\t" << file_name << ')' << std::endl;
+		std::exit(EXIT_FAILURE);
+	}
 	take_out_sound.setBuffer(take_out_buffer);
 	take_out_sound.setVolume(control_system::sound_master);
 
-	take_buffer.loadFromFile("C:\\Users\\User\\source\\repos\\RoboTrash_SFML\\redist\\take.ogg");
+	file_name = "take.ogg";
+	take_buffer.loadFromFile(file_path + file_name);
+	if (!take_buffer.loadFromFile(file_path + file_name))
+	{
+		std::cout << "\n!!!\tloadFromFile(\t" << file_name << ')' << std::endl;
+		std::exit(EXIT_FAILURE);
+	}
 	take_sound.setBuffer(take_buffer);
 	take_sound.setVolume(control_system::sound_master);
 }
@@ -47,101 +82,118 @@ void Robot::calc_azimuth(Item& trash_can) {
 void Robot::calc_coord(float &x_, float &y_) {
 	x_ += cos(azimuth / 180.f * math_const::PI) * control_system::robot_step;
 	y_ += sin(azimuth / 180.f * math_const::PI) * control_system::robot_step;
+	std::this_thread::sleep_for(std::chrono::milliseconds(10));
+}
+
+void Robot::calc_coord(float& x_, float& y_, float& angle) {
+	x_ += cos(angle / 180.f * math_const::PI) * control_system::robot_step;
+	y_ += sin(angle / 180.f * math_const::PI) * control_system::robot_step;
 }
 
 void Robot::move(std::vector<Camera> &camera, std::vector<Item> &item, Item &trash_can) {
-	switch (state)
+	while (true)
 	{
-	case Robot_State::WAITING:
-		for (size_t i{}; i < camera.size(); i++)
+		if (thread_flag)
 		{
-			if (camera[i].get_detect())
+			switch (state)
 			{
-				cam_no = i;
-				state = Robot_State::ROTATED;
-				detect_i = camera[cam_no].get_detect_i(); //
+			case Robot_State::WAITING:
+				for (size_t i{}; i < camera.size(); i++)
+				{
+					if (camera[i].get_detect())
+					{
+						cam_no = i;
+						state = Robot_State::ROTATED;
+						detect_i = camera[cam_no].get_detect_i();
+					}
+				}
+
+				break;
+
+			case Robot_State::ROTATED:
+				calc_azimuth(camera[cam_no]);
+				((azimuth - angle) < 0) ? turn_right() : turn_left();
+
+				if (static_cast<int>(angle) == static_cast<int>(azimuth))
+				{
+					state = Robot_State::MOVING_TO_TRASH;
+				}
+
+				break;
+
+			case Robot_State::MOVING_TO_TRASH:
+				if (item[detect_i].get_item_type() == Item_Type::TRASH)
+				{
+					calc_coord(rotate_x, rotate_y);
+					calc_coord(x, y);
+				}
+				else
+				{
+					state = Robot_State::WAITING;
+				}
+
+
+				if (((abs(detect_x - x)) < control_system::robot_detect)
+					&& ((abs(detect_y - y)) < control_system::robot_detect))
+				{
+					item[detect_i].set_item_type();
+					camera[cam_no].set_detect_false();
+					state = Robot_State::TAKE_TRASH;
+				}
+
+				break;
+
+			case Robot_State::TAKE_TRASH:
+				take_object(item[detect_i]);
+
+				if ((abs((item[detect_i].get_coord_x() - x)
+					/ control_system::robot_throw) < 0.1f)
+					&& (abs((item[detect_i].get_coord_y() - y)
+						/ control_system::robot_throw) < 0.1f))
+				{
+					state = Robot_State::ROTATED_TO_TRASH_CAN;
+				}
+
+				break;
+
+			case Robot_State::ROTATED_TO_TRASH_CAN:
+				calc_azimuth(trash_can);
+				((azimuth - angle) < 0) ? turn_right() : turn_left();
+
+				if (static_cast<int>(angle) == static_cast<int>(azimuth))
+				{
+					state = Robot_State::MOVING_TO_TRASH_CAN;
+				}
+
+				break;
+
+			case Robot_State::MOVING_TO_TRASH_CAN:
+				calc_coord(rotate_x, rotate_y);
+				calc_coord(x, y);
+				item[detect_i].set_coord(x, y);
+
+				if ((abs(trash_can.get_coord_x() - x) < control_system::robot_detect)
+					&& (abs(trash_can.get_coord_y() - y) < control_system::robot_detect))
+				{
+					state = Robot_State::TAKE_OUT_TRASH;
+				}
+
+				break;
+
+			case Robot_State::TAKE_OUT_TRASH:
+				take_out_object(item[detect_i], trash_can);
+
+				if ((abs((item[detect_i].get_coord_x() - trash_can.get_coord_x())
+					/ control_system::robot_throw) < 0.1f)
+					&& (abs((item[detect_i].get_coord_y() - trash_can.get_coord_y())
+						/ control_system::robot_throw) < 0.1f))
+				{
+					state = Robot_State::WAITING;
+				}
+
+				break;
 			}
 		}
-		break;
-
-	case Robot_State::ROTATED:
-		calc_azimuth(camera[cam_no]);
-		((azimuth - angle) < 0) ? turn_right() : turn_left();
-
-		if (static_cast<int>(angle) == static_cast<int>(azimuth))
-		{
-			state = Robot_State::MOVING_TO_TRASH;
-		}
-		
-		break;
-
-	case Robot_State::MOVING_TO_TRASH:
-		if (item[detect_i].get_item_type() == Item_Type::TRASH)
-		{
-			calc_coord(rotate_x, rotate_y);
-			calc_coord(x, y);
-		}
-		else
-		{
-			state = Robot_State::WAITING;
-		}
-		
-
-		if (((abs(detect_x - x)) < control_system::robot_detect)
-			&& ((abs(detect_y - y)) < control_system::robot_detect))
-		{ 
-			item[detect_i].set_item_type();
-			camera[cam_no].set_detect_false();
-			state = Robot_State::TAKE_TRASH;
-		}
-
-		break;
-
-	case Robot_State::TAKE_TRASH:
-		take_object(item[detect_i]);
-
-		if ((abs((item[detect_i].get_coord_x() - x)
-				/ control_system::robot_throw) < 0.1f)
-			&& (abs((item[detect_i].get_coord_y() - y)
-				/ control_system::robot_throw) < 0.1f))
-		{
-			state = Robot_State::ROTATED_TO_TRASH_CAN;
-		}
-		break;
-
-	case Robot_State::ROTATED_TO_TRASH_CAN:
-		calc_azimuth(trash_can);
-		((azimuth - angle) < 0) ? turn_right() : turn_left();
-
-		if (static_cast<int>(angle) == static_cast<int>(azimuth))
-		{
-			state = Robot_State::MOVING_TO_TRASH_CAN;
-		}
-		break;
-
-	case Robot_State::MOVING_TO_TRASH_CAN:
-		calc_coord(rotate_x, rotate_y);
-		calc_coord(x, y);
-		item[detect_i].set_coord(x, y);
-
-		if ((abs(trash_can.get_coord_x() - x) < control_system::robot_detect)
-			&& (abs(trash_can.get_coord_y() - y) < control_system::robot_detect))
-		{
-			state = Robot_State::TAKE_OUT_TRASH;
-		}
-		break;
-
-	case Robot_State::TAKE_OUT_TRASH:
-		take_out_object(item[detect_i], trash_can);
-
-		if ((abs((item[detect_i].get_coord_x() - trash_can.get_coord_x()) 
-				/ control_system::robot_throw) < 0.1f)
-			&& (abs((item[detect_i].get_coord_y() - trash_can.get_coord_y())
-				/ control_system::robot_throw) < 0.1f))
-		{
-			state = Robot_State::WAITING;
-		}
-		break;
 	}
 }
 
@@ -177,31 +229,8 @@ void Robot::set_state(Robot_State state_) {
 	state = state_;
 }
 
-const std::string Robot::get_state() { // to do admin cpp
-	switch (state)
-	{
-	case Robot_State::WAITING:
-		return "waiting...";
-
-	case Robot_State::MOVING_TO_TRASH:
-		return "moving to trash";
-
-	case Robot_State::MOVING_TO_TRASH_CAN:
-		return "moving to trash can";
-
-	case Robot_State::TAKE_TRASH:
-		return "take the trash";
-
-	case Robot_State::TAKE_OUT_TRASH:
-		return "take out the trash";
-
-	case Robot_State::ROTATED:
-		return "rotated";
-
-	default:
-		std::cout << "\n!!!\tDefault case print_robot_state()" << std::endl;
-		std::exit(EXIT_FAILURE);
-	}
+void Robot::set_thread_flag(bool flag_) {
+	thread_flag = flag_;
 }
 
 float Robot::get_coord_x() {

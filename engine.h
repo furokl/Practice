@@ -27,9 +27,11 @@ private:
 	sf::Vector2i mouse;
 
 	std::thread th_robot_move;
+	std::thread th_camera;
 
 public:
 	Engine();
+	~Engine();
 	void start();
 	void click(std::vector<Camera>&, std::vector<Robot>&);
 };

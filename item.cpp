@@ -11,11 +11,23 @@ Item::Item(float x_, float y_, Item_Type type_, Item_Form form_)
 {
 	make_volume(form_);
 
-	item_texture.loadFromFile("C:\\Users\\User\\source\\repos\\RoboTrash_SFML\\redist\\item.png");
+	file_name = "item.png";
+	item_texture.loadFromFile(file_path + file_name);
+	if (!item_texture.loadFromFile(file_path + file_name))
+	{
+		std::cout << "\n!!!\tloadFromFile(\t" << file_name << ')' << std::endl;
+		std::exit(EXIT_FAILURE);
+	}
 	item_texture.setSmooth(true);
 	item_sprite.setTexture(item_texture);
 
-	trash_can_texture.loadFromFile("C:\\Users\\User\\source\\repos\\RoboTrash_SFML\\redist\\trash_can.png");
+	file_name = "trash_can.png";
+	item_texture.loadFromFile(file_path + file_name);
+	if (!trash_can_texture.loadFromFile(file_path + file_name))
+	{
+		std::cout << "\n!!!\tloadFromFile(\t" << file_name << ')' << std::endl;
+		std::exit(EXIT_FAILURE);
+	}
 	trash_can_texture.setSmooth(true);
 	trash_can_sprite.setTexture(trash_can_texture);
 }

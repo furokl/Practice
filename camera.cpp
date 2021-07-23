@@ -12,12 +12,25 @@
 Camera::Camera(float x_, float y_)
 	: x(x_), y(y_)
 {	
-	camera_texture.loadFromFile("C:\\Users\\User\\source\\repos\\RoboTrash_SFML\\redist\\camera.png");
+	file_name = "camera.png";
+	camera_texture.loadFromFile(file_path + file_name);
+	if (!camera_texture.loadFromFile(file_path + file_name))
+	{
+		std::cout << "\n!!!\tloadFromFile(" << file_name << ')' << std::endl;
+		std::exit(EXIT_FAILURE);
+	}
 	camera_sprite.setTexture(camera_texture);
 	camera_sprite.setColor(sf::Color(255, 255, 255, 100));
 
-	detect_buffer.loadFromFile("C:\\Users\\User\\source\\repos\\RoboTrash_SFML\\redist\\cam.ogg");
+	file_name = "cam.ogg";
+	detect_buffer.loadFromFile(file_path + file_name);
+	if (!detect_buffer.loadFromFile(file_path + file_name))
+	{
+		std::cout << "\n!!!\tloadFromFile(" << file_name << ')' << std::endl;
+		std::exit(EXIT_FAILURE);
+	}
 	detect_sound.setBuffer(detect_buffer);
+	detect_sound.setVolume(control_system::sound_master);
 }
 
 Camera::~Camera() 
@@ -25,44 +38,55 @@ Camera::~Camera()
 }
 
 void Camera::rotate() {
-	angle += control_system::camera_rotate;
-	
-	std::this_thread::sleep_for(std::chrono::milliseconds(20));
+	while (true)
+	{
+		if (thread_flag || !detect)
+		{
+			angle += control_system::camera_rotate;
+			std::this_thread::sleep_for(std::chrono::milliseconds(20));
 
-	if (angle >= 360.f)
-		angle = 0.f;
+			if (angle >= 360.f)
+				angle = 0.f;
+		}
+	}
 }
 
 void Camera::make_beam(std::vector <Item> &item) {
-	float temp_x{ x }, temp_y{ y };
-	for (size_t i{}; i < control_system::beam_range; i++)
+	while (true)
 	{
-		temp_x += sin(angle) * control_system::beam_step;
-		temp_y += cos(angle) * control_system::beam_step;
-
-		for (size_t j{}; j < item.size(); j++)
+		if (thread_flag && !detect)
 		{
-			if (((gap.x_min[j] <= temp_x) && (temp_x <= gap.x_max[j]))
-				&& ((gap.y_min[j] <= temp_y) && (temp_y <= gap.y_max[j])))
+			float temp_x{ x }, temp_y{ y };
+			for (size_t i{}; i < control_system::beam_range; i++)
 			{
-				if (check_item(item[j]))
+				temp_x += sin(angle) * control_system::beam_step;
+				temp_y += cos(angle) * control_system::beam_step;
+
+				for (size_t j{}; j < item.size(); j++)
 				{
-					state = Camera_State::DETECTED;
-					detect = true;
-					detect_x = temp_x;
-					detect_y = temp_y;
-					detect_i = j;
-					detect_sound.play();
+					if (((gap.x_min[j] <= temp_x) && (temp_x <= gap.x_max[j]))
+						&& ((gap.y_min[j] <= temp_y) && (temp_y <= gap.y_max[j])))
+					{
+						if (check_item(item[j]))
+						{
+							state = Camera_State::DETECTED;
+							detect = true;
+							detect_x = temp_x;
+							detect_y = temp_y;
+							detect_i = j;
+							detect_sound.play();
+						}
+					}
 				}
+				if (detect)
+					break;
 			}
+			detect_x = temp_x;
+			detect_y = temp_y;
+			temp_x = 0.f;
+			temp_y = 0.f;
 		}
-		if (detect)
-			break;
 	}
-	detect_x = temp_x;
-	detect_y = temp_y;
-	temp_x = 0.f;
-	temp_y = 0.f;
 }
 
 bool Camera::check_item(Item &item) {
@@ -106,45 +130,13 @@ void Camera::set_item_points(std::vector<Item> &item) {
 	}
 }
 
-const std::string Camera::get_state() {
-	switch (state)
-	{
-	case Camera_State::WAITING:
-		return "waiting...";
-
-	case Camera_State::DETECTED:
-		return "detected!";
-
-	case Camera_State::MAKE_PHOTO:
-		return "make a photo";
-
-	case Camera_State::SEND_PHOTO:
-		return "send a photo";
-
-	case Camera_State::ROTATED:
-		return "rotated";
-
-	default:
-		std::cout << "\n!!!\tDefault case print_camera_state()" << std::endl;
-		std::exit(EXIT_FAILURE);
-	}
+void Camera::set_thread_flag(bool flag_) {
+	thread_flag = flag_;
 }
 
 // SFML
 
 void Camera::draw_beam(sf::RenderWindow &window, std::vector<Item> &item) {
-	
-	if (!detect)
-	{
-		std::thread th([&] {
-			make_beam(item);
-			rotate();
-			});
-
-		th.detach();
-	}
-	
-	
 	draw_beam_range(window);
 
 	sf::Vertex beam[2] =
