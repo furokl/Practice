@@ -25,22 +25,10 @@ private:
 		angle{},
 		azimuth{};
 	size_t
-		collision_j,
 		detect_i,
 		cam_no;
 
-	struct Temp_State
-	{
-		Robot_State i, j;
-	};
-	struct Temp_Angle
-	{
-		float r, l;
-	};
-
 	Robot_State state{};
-	Temp_State temp_state;
-	Temp_Angle temp_angle;
 
 	sf::Texture robot_texture;
 	sf::Sprite robot_sprite;

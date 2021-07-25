@@ -12,7 +12,13 @@
 
 Engine::Engine()
 {
-	background_texture.loadFromFile("C:\\Users\\Даниил\\source\\repos\\RoboTrash_SFML\\redist\\room.png");
+	file_name = "room.png";
+	background_texture.loadFromFile(file_path + file_name);
+	if (!background_texture.loadFromFile(file_path + file_name))
+	{
+		std::cout << "\n!!!\tloadFromFile(" << file_name << ')' << std::endl;
+		std::exit(EXIT_FAILURE);
+	}
 	background_sprite.setTexture(background_texture);
 
 	walls_texture.loadFromFile("C:\\Users\\Даниил\\source\\repos\\RoboTrash_SFML\\redist\\walls.png");
@@ -24,16 +30,19 @@ Engine::~Engine()
 }
 
 void Engine::start() {
+
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	sf::Clock clock = sf::Clock::Clock();
+	sf::Time previous_time = clock.getElapsedTime();
 
 	sf::RenderWindow window(sf::VideoMode(1100, 600), "RoboTrash");
 	window.setFramerateLimit(60);
 
 	std::vector<Item> item{
-		Item(400.f, 330.f, Item_Type::TRASH, Item_Form::RECTANGLE),
-		Item(500.f, 230.f, Item_Type::TRASH, Item_Form::RECTANGLE),
-		Item(540.f, 400.f, Item_Type::TRASH, Item_Form::RECTANGLE),
-		Item(345.f, 400.f, Item_Type::TRASH, Item_Form::RECTANGLE)
+	Item(400.f, 330.f, Item_Type::TRASH, Item_Form::RECTANGLE),
+	Item(500.f, 230.f, Item_Type::TRASH, Item_Form::RECTANGLE),
+	Item(540.f, 400.f, Item_Type::TRASH, Item_Form::RECTANGLE),
+	Item(345.f, 400.f, Item_Type::TRASH, Item_Form::RECTANGLE)
 	};
 	Item trash_can(700.f, 120.f, Item_Type::TRASH_CAN, Item_Form::RECTANGLE);
 
@@ -59,14 +68,14 @@ void Engine::start() {
 	admin.set_camera_off(0);
 	admin.set_robot_off(0);
 
+	// thread
 	for (auto& robot_ : robot)
 	{
-			th_robot_move = std::thread([&] {
-				robot_.move(camera, item, trash_can);
-				});
-			th_robot_move.detach();
+		th_robot_move = std::thread([&] {
+			robot_.move(camera, item, trash_can);
+			});
+		th_robot_move.detach();
 	}
-	
 	for (auto& camera_ : camera)
 	{
 		th_camera = std::thread([&] {
@@ -82,8 +91,6 @@ void Engine::start() {
 		th_camera.detach();
 	}
 
-	sf::Clock clock = sf::Clock::Clock();
-	sf::Time previous_time = clock.getElapsedTime();
 	while (window.isOpen())
 	{
 

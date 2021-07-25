@@ -1,15 +1,10 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
-#include <mutex>
 
 #include "control_system.h"
 #include "math_const.h"
 #include "robot.h"
-
-std::mutex mtx1;
-std::mutex mtx2;
-std::thread thr;
 
 Robot::Robot(float x_, float y_)
 	: x(x_), y(y_)

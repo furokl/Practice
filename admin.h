@@ -24,17 +24,6 @@ public:
 	void set_camera_off();
 	bool get_robot_power();
 	bool get_camera_power();
-
-	void add_item();
-	void add_robot();
-	void add_camera();
-	void delete_item();
-	void delete_robot();
-	void delete_camera();
-	std::string get_robot_state(Robot& robot);
-	std::string get_camera_state(Camera& camera);
-
-
 };
 
 #endif // !ADMIN_H

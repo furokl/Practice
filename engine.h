@@ -10,6 +10,9 @@
 class Engine
 {
 private:
+	std::string
+		file_path{ "C:\\Users\\Даниил\\source\\repos\\RoboTrash_SFML\\redist\\" },
+		file_name;
 	float
 		fps;
 
@@ -33,7 +36,7 @@ public:
 	Engine();
 	~Engine();
 	void start();
-	void click(std::vector<Camera>&, std::vector<Robot>&);
+
 };
 
 #endif // !ENGINE_H
